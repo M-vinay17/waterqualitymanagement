@@ -1,434 +1,70 @@
-# Water Quality Monitor – Frontend Guide
-Beginner-Friendly Setup & Development Guide
+# Getting Started with Create React App
 
-This guide is written for interns who:
-- Are new to React
-- Have never worked with maps
-- Have never connected frontend to backend
-- Have zero environmental domain knowledge
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-Follow step by step. Do not skip sections.
+## Available Scripts
 
-------------------------------------------------------------
-1. What Is The Frontend?
-------------------------------------------------------------
+In the project directory, you can run:
 
-The frontend is what users see in the browser.
+### `npm start`
 
-It is responsible for:
-- Showing dashboards
-- Displaying water quality data
-- Showing maps
-- Accepting pollution reports
-- Displaying alerts
-- Handling login and authentication
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-The frontend DOES NOT:
-- Store data permanently
-- Make business decisions
-- Directly access the database
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
 
-It only talks to the backend using APIs.
+### `npm test`
 
-------------------------------------------------------------
-2. Technologies Used
-------------------------------------------------------------
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-- React.js (UI framework)
-- Tailwind CSS (Styling)
-- Axios (API requests)
-- React Router (Page navigation)
-- Leaflet or Google Maps (Map integration)
+### `npm run build`
 
-------------------------------------------------------------
-3. Install Required Software
-------------------------------------------------------------
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-Before starting, install:
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
 
-1. Node.js
-Download: https://nodejs.org
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-Check installation:
-node -v
-npm -v
+### `npm run eject`
 
-If versions show, you're ready.
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-------------------------------------------------------------
-4. Setup The Project
-------------------------------------------------------------
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Go inside frontend folder:
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-cd frontend
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-Install dependencies:
+## Learn More
 
-npm install
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-If project is not created yet:
+To learn React, check out the [React documentation](https://reactjs.org/).
 
-npx create-react-app .
-npm install axios react-router-dom
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
+### Code Splitting
 
-------------------------------------------------------------
-5. Start Development Server
-------------------------------------------------------------
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-Run:
+### Analyzing the Bundle Size
 
-npm start
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-Open in browser:
+### Making a Progressive Web App
 
-http://localhost:3000
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
 
-If React page loads, frontend is working.
+### Advanced Configuration
 
-------------------------------------------------------------
-6. Recommended Folder Structure
-------------------------------------------------------------
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
 
-Inside src/ organize like this:
+### Deployment
 
-src/
-    components/
-    pages/
-    services/
-    hooks/
-    layouts/
-    utils/
-    App.js
-    index.js
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
-Explanation:
+### `npm run build` fails to minify
 
-components/  -> Reusable UI pieces (Navbar, Card, AlertBox)
-pages/       -> Full pages (Login, Dashboard, Reports)
-services/    -> API calls
-hooks/       -> Custom reusable logic
-layouts/     -> Page structure wrapper
-utils/       -> Helper functions
-
-------------------------------------------------------------
-7. Configure Tailwind CSS
-------------------------------------------------------------
-
-Open tailwind.config.js
-
-Make sure content includes:
-
-content: [
-  "./src/**/*.{js,jsx,ts,tsx}",
-],
-
-Open src/index.css and replace everything with:
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-Restart server:
-
-npm start
-
-Test:
-
-<div className="bg-blue-500 text-white p-4">
-  Tailwind is working
-</div>
-
-------------------------------------------------------------
-8. Connecting To Backend
-------------------------------------------------------------
-
-Create file:
-
-src/services/api.js
-
-Add:
-
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: "http://127.0.0.1:8000"
-});
-
-export default api;
-
-Now you can call:
-
-api.get("/users");
-api.post("/login", data);
-
-------------------------------------------------------------
-9. Setting Up Routing
-------------------------------------------------------------
-
-Open App.js:
-
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Reports from "./pages/Reports";
-import MapView from "./pages/MapView";
-
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/map" element={<MapView />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
-
-export default App;
-
-------------------------------------------------------------
-10. Pages You Will Build
-------------------------------------------------------------
-
-Login Page
-Register Page
-Dashboard Page
-Submit Report Page
-Map View Page
-Alerts Page
-NGO Dashboard Page
-
-Build one page at a time.
-
-------------------------------------------------------------
-11. Creating A Basic Page
-------------------------------------------------------------
-
-Example: Login Page
-
-Create src/pages/Login.js
-
-import React from "react";
-
-function Login() {
-  return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="p-6 bg-white shadow rounded w-80">
-        <h1 className="text-xl font-bold mb-4">Login</h1>
-        <input
-          type="email"
-          placeholder="Email"
-          className="border p-2 w-full mb-2"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="border p-2 w-full mb-4"
-        />
-        <button className="bg-blue-600 text-white w-full py-2 rounded">
-          Login
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export default Login;
-
-------------------------------------------------------------
-12. Handling Forms Properly
-------------------------------------------------------------
-
-Use useState:
-
-import React, { useState } from "react";
-
-const [email, setEmail] = useState("");
-
-<input
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-/>
-
-------------------------------------------------------------
-13. Making API Calls
-------------------------------------------------------------
-
-Example login:
-
-import api from "../services/api";
-
-const handleLogin = async () => {
-  try {
-    const response = await api.post("/login", {
-      email,
-      password
-    });
-
-    console.log(response.data);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-------------------------------------------------------------
-14. Storing JWT Token
-------------------------------------------------------------
-
-After login:
-
-localStorage.setItem("token", response.data.access_token);
-
-Set token for future requests:
-
-api.defaults.headers.common["Authorization"] =
-  "Bearer " + localStorage.getItem("token");
-
-------------------------------------------------------------
-15. Protected Routes
-------------------------------------------------------------
-
-If token not present:
-Redirect user to login.
-
-Only logged-in users can:
-- Submit reports
-- View dashboard
-- Access NGO tools
-
-------------------------------------------------------------
-16. Map Integration (Important Feature)
-------------------------------------------------------------
-
-Install Leaflet:
-
-npm install leaflet react-leaflet
-
-Basic Map Example:
-
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-
-<MapContainer center={[20, 77]} zoom={5} style={{ height: "500px" }}>
-  <TileLayer
-    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-  />
-  <Marker position={[20, 77]} />
-</MapContainer>
-
-Use latitude and longitude from backend to display stations.
-
-------------------------------------------------------------
-17. Color Coding Water Safety
-------------------------------------------------------------
-
-Example:
-
-If pH < 6 or pH > 8:
-Show red marker
-
-If normal:
-Show green marker
-
-This helps users quickly identify unsafe water areas.
-
-------------------------------------------------------------
-18. Common Frontend Errors
-------------------------------------------------------------
-
-Problem: Module not found
-Solution:
-npm install
-
-Problem: Tailwind not working
-Solution:
-Restart server
-
-Problem: CORS error
-Solution:
-Enable CORS in backend
-
-Problem: Map not showing
-Solution:
-Check CSS import for Leaflet
-
-------------------------------------------------------------
-19. Development Strategy
-------------------------------------------------------------
-
-Step 1:
-Build static UI first.
-
-Step 2:
-Connect to backend.
-
-Step 3:
-Display dynamic data.
-
-Step 4:
-Add loading states.
-
-Step 5:
-Improve UI styling.
-
-Do not mix everything at once.
-
-------------------------------------------------------------
-20. Domain Concepts (Simple Explanation)
-------------------------------------------------------------
-
-Water Station:
-Physical location where water is tested.
-
-Station Reading:
-Measured value (pH, turbidity, etc.)
-
-Alert:
-Official warning (boil notice, contamination).
-
-Report:
-User-submitted pollution complaint.
-
-Role:
-Citizen, NGO, Authority, Admin.
-
-------------------------------------------------------------
-21. Best Practices
-------------------------------------------------------------
-
-Keep components small.
-Reuse UI components.
-Keep API calls in services folder.
-Avoid writing logic inside JSX.
-Handle errors properly.
-Always test in browser.
-
-------------------------------------------------------------
-22. Final Advice
-------------------------------------------------------------
-
-Frontend may feel confusing at first.
-
-Focus on understanding:
-- State
-- Props
-- API calls
-- Routing
-- Conditional rendering
-
-Build small features.
-Test frequently.
-Read console errors carefully.
-
-Do not rush.
-
-Step-by-step progress is the correct way.
-
-------------------------------------------------------------
-End of Frontend README
-------------------------------------------------------------
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
