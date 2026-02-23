@@ -1,3 +1,26 @@
+<<<<<<< HEAD
+# Water Quality Monitor — Frontend
+
+This folder contains a React + Vite frontend for the Water Quality Monitoring dashboard.
+
+Quick start (Windows):
+
+1. From `wqm-b13-main/frontend` run:
+
+```bash
+npm install
+npm run dev
+```
+
+2. Open the dev URL printed by Vite (usually `http://localhost:5173`).
+
+Notes:
+- This project uses Tailwind CSS. The `index.css` includes Tailwind directives.
+- Leaflet CSS is imported inside `WaterMap.jsx` (`leaflet/dist/leaflet.css`). Ensure `leaflet` is installed.
+- API calls are stubbed with dummy data inside `Dashboard.jsx`. Replace the dummy data with `axios.get('/api/dashboard')` when backend is ready.
+
+If you want, I can run `npm install` and start the dev server for you.
+=======
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -68,3 +91,4 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+>>>>>>> 91a7125c4a46650dc3669df87213cb4301fddfa0
