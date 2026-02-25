@@ -1,20 +1,26 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
+# Used when creating a new user
 class UserCreate(BaseModel):
     name: str
-    email: str
+    email: EmailStr
     password: str
-    role: str = "citizen"  # Optional, default citizen
+    role: str
 
-class User(BaseModel):
+
+# Used when updating user
+class UserUpdate(BaseModel):
+    name: str
+    email: EmailStr
+    role: str
+
+
+# Used when returning user data (response)
+class UserResponse(BaseModel):
     id: int
     name: str
-    email: str
+    email: EmailStr
     role: str
 
     class Config:
-        from_attributes = True  # For ORM mode
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+        from_attributes = True   # For Pydantic v2

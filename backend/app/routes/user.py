@@ -1,114 +1,81 @@
-# backend/app/routes/user.py
-
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import timedelta
-from typing import Annotated
-
-from app.core import security, database
+from app.schemas.user import UserCreate, UserUpdate, UserResponse
 from app.models.user import User
-from app.schemas.user import UserCreate, User as UserOut, Token
-from app.services.user import (
-    create_user,
-    get_user_by_email,
-    authenticate_user,
+from app.core.database import get_db
+from app.core.security import hash_password
+
+router = APIRouter(
+    prefix="/users",
+    tags=["Users"]
 )
 
-router = APIRouter(tags=["users"])  # ← delete prefix="/users"
+# ✅ CREATE USER
+@router.post("/", response_model=UserResponse)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    existing_user = db.query(User).filter(User.email == user.email).first()
 
-# OAuth2 scheme - this tells Swagger where to send login request
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
 
-
-# Dependency to get current authenticated user
-async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
-    db: Session = Depends(database.get_db)
-):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+    new_user = User(
+        name=user.name,
+        email=user.email,
+        password=hash_password(user.password),
+        role=user.role
     )
-    
-    try:
-        payload = security.jwt.decode(
-            token,
-            security.SECRET_KEY,
-            algorithms=[security.ALGORITHM]
-        )
-        email: str = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-    except security.JWTError:
-        raise credentials_exception
-    
-    user = get_user_by_email(db, email=email)
-    if user is None:
-        raise credentials_exception
-    
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
+
+
+# ✅ GET ALL USERS
+@router.get("/", response_model=list[UserResponse])
+def get_all_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+    return users
+
+
+# ✅ GET SINGLE USER
+@router.get("/{user_id}", response_model=UserResponse)
+def get_single_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     return user
 
 
-@router.post("/register", response_model=UserOut)
-def register(
-    user: UserCreate,
-    db: Session = Depends(database.get_db)
-):
-    """
-    Register a new user
-    """
-    db_user = get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(
-            status_code=400,
-            detail="Email already registered"
-        )
-    
-    return create_user(db, user)
+# ✅ UPDATE USER
+@router.put("/{user_id}")
+def update_user(user_id: int, user_data: UserUpdate, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
 
-
-@router.post("/login", response_model=Token)
-def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: Session = Depends(database.get_db)
-):
-    """
-    Login and get JWT access token
-    Use 'username' field = email
-    """
-    user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = security.create_access_token(
-        data={"sub": user.email},
-        expires_delta=access_token_expires
-    )
-    
-    return {"access_token": access_token, "token_type": "bearer"}
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.name = user_data.name
+    user.email = user_data.email
+    user.role = user_data.role
+
+    db.commit()
+
+    return {"message": "User updated successfully"}
 
 
-@router.get("/me", response_model=UserOut)
-def read_users_me(
-    current_user: Annotated[User, Depends(get_current_user)]
-):
-    """
-    Get current authenticated user info
-    (Used in dashboard to show name & role)
-    """
-    return current_user
+# ✅ DELETE USER
+@router.delete("/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
 
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-@router.post("/logout")
-def logout():
-    """
-    Logout - mostly handled on frontend by removing token
-    """
-    return {"message": "Logged out successfully"}
+    db.delete(user)
+    db.commit()
+
+    return {"message": "User deleted successfully"}
