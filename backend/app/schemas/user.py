@@ -8,6 +8,18 @@ class UserCreate(BaseModel):
     role: str
 
 
+# Used when logging in
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+# Token response after login
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+
+
 # Used when updating user
 class UserUpdate(BaseModel):
     name: str

@@ -1,113 +1,108 @@
-import Header from "../components/Header";
-import React from "react";
-import { Link } from "react-router-dom";
 
-function Profile() {
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const profileVariants = {
+  hidden: {
+    x: "100%",
+    opacity: 0,
+    scale: 0.96,
+  },
+  visible: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: "spring",
+      damping: 25,
+      stiffness: 180,
+      duration: 0.5,
+    },
+  },
+  exit: {
+    x: "100%",
+    opacity: 0,
+    scale: 0.96,
+    transition: { duration: 0.4, ease: "easeIn" },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.1 + 0.2,
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  }),
+};
+
+export default function Profile({ onClose }) {
   const user = {
     name: "Admin User",
-    email: "admin@example.com",
-    role: "Administrator",
-    phone: "9876543210",
-    organization: "City Water Department",
-    memberSince: "January 2024",
-  };
-
-  const stats = {
-    reportsSubmitted: 15,
-    reportsVerified: 12,
-    alertsRaised: 3,
+    email: "admin@watermonitor.com",
+    role: "Admin",
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <AnimatePresence>
+      {/* You can wrap in AnimatePresence in parent instead if preferred */}
+      <motion.div
+        key="profile-panel"
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={profileVariants}
+        className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl overflow-hidden"
+      >
+        <div className="relative h-full p-6 sm:p-8 overflow-y-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-8">
+            <motion.h2
+              className="text-2xl font-bold text-sky-700"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              User Profile
+            </motion.h2>
 
-      {/* Header */}
-      <div className="bg-white shadow-sm px-8 py-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-blue-600">
-          Water Quality Monitor
-        </h1>
-
-        <div className="flex items-center gap-4">
-          <span className="text-gray-700">Admin User</span>
-          <button className="bg-red-500 text-white px-4 py-1 rounded">
-            Logout
-          </button>
-        </div>
-      </div>
-
-      {/* Profile Content */}
-      <div className="p-8">
-
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">User Profile</h2>
-
-          <Link
-            to="/"
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Back to Dashboard
-          </Link>
-        </div>
-
-        {/* Profile Card */}
-        <div className="bg-white p-8 rounded-lg shadow-md max-w-lg">
-
-          <div className="mb-4">
-            <p className="text-gray-500">Full Name</p>
-            <p className="font-semibold text-lg">{user.name}</p>
+            <motion.button
+              onClick={onClose}
+              className="text-gray-500 hover:text-red-600 text-2xl font-semibold transition-colors"
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Close"
+            >
+              ✕
+            </motion.button>
           </div>
 
-          <div className="mb-4">
-            <p className="text-gray-500">Email</p>
-            <p className="font-semibold text-lg">{user.email}</p>
-          </div>
-
-          <div className="mb-4">
-            <p className="text-gray-500">Role</p>
-            <p className="font-semibold text-lg">{user.role}</p>
-          </div>
-
-          <div className="mb-4">
-            <p className="text-gray-500">Phone</p>
-            <p className="font-semibold text-lg">{user.phone}</p>
-          </div>
-
-          <div className="mb-4">
-            <p className="text-gray-500">Organization</p>
-            <p className="font-semibold text-lg">{user.organization}</p>
-          </div>
-
-          <div className="mb-6">
-            <p className="text-gray-500">Member Since</p>
-            <p className="font-semibold text-lg">{user.memberSince}</p>
-          </div>
-
-          <button className="bg-green-500 text-white px-4 py-2 rounded w-full">
-            Edit Profile
-          </button>
-        </div>
-
-        {/* User Stats */}
-        <div className="grid grid-cols-3 gap-4 mt-8 max-w-lg">
-          <div className="bg-blue-500 text-white p-4 rounded text-center">
-            <p className="text-sm">Reports Submitted</p>
-            <p className="text-xl font-bold">{stats.reportsSubmitted}</p>
-          </div>
-
-          <div className="bg-green-500 text-white p-4 rounded text-center">
-            <p className="text-sm">Reports Verified</p>
-            <p className="text-xl font-bold">{stats.reportsVerified}</p>
-          </div>
-
-          <div className="bg-yellow-500 text-white p-4 rounded text-center">
-            <p className="text-sm">Alerts Raised</p>
-            <p className="text-xl font-bold">{stats.alertsRaised}</p>
+          {/* Content */}
+          <div className="space-y-6 text-gray-700">
+            {[
+              { label: "Name", value: user.name },
+              { label: "Email", value: user.email },
+              { label: "Role", value: user.role },
+            ].map((item, index) => (
+              <motion.p
+                key={item.label}
+                custom={index}
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                className="flex flex-wrap gap-2"
+              >
+                <strong className="text-gray-900 min-w-[80px]">{item.label}:</strong>
+                <span>{item.value}</span>
+              </motion.p>
+            ))}
           </div>
         </div>
-
-      </div>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
-
-export default Profile;

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.schemas.user import UserCreate, UserLogin, TokenResponse
 from app.models.user import User
 from app.core.database import get_db
-from app.core.security import hash_password, verify_password, create_access_token
+from app.core.security import hash_password, verify_password, create_access_token, verify_token
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -15,11 +15,10 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     new_user = User(
-        full_name=user.full_name,
+        name=user.name,
         email=user.email,
         password=hash_password(user.password),
-        role=user.role,
-        location=user.location
+        role=user.role
     )
 
     db.add(new_user)
@@ -43,3 +42,5 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "access_token": token,
         "token_type": "bearer"
     }
+
+
