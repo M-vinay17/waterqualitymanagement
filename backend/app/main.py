@@ -1,35 +1,40 @@
 from fastapi import FastAPI
-from app.routes import user, auth, water
-from app.core.database import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
 
-# Import models so tables are registered
-from app.models.user import User
-# ... other imports ...
-from app.models.water_station import WaterStation
-from app.models.station_readings import StationReading
+from app.routes import user, auth, water, search
+from app.core.database import engine, Base
 
-# Your existing code...
+# Import models so tables are created
+from app.models import user as user_model
+from app.models import water_reading
+from app.models import water_station
+from app.models import station_readings
+from app.models import search as search_model
 
 app = FastAPI()
 
-# Create tables
+# Create database tables
 Base.metadata.create_all(bind=engine)
 
 # Include routes
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(water.router)
+app.include_router(search.router)
 
-# CORS middleware
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Root endpoint
 @app.get("/")
 def home():
-    return {"message": "✅ Backend is running successfully!"}
+    return {"message": "Backend is running successfully!"}

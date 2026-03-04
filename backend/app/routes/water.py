@@ -9,6 +9,7 @@ from app.core.security import get_current_user
 
 from app.models.water_station import WaterStation
 from app.models.station_readings import StationReading
+from app.models.water_reading import WaterReading
 from app.models.user import User
 
 from app.schemas.water import (
@@ -16,7 +17,9 @@ from app.schemas.water import (
     WaterStationOut,
     StationReadingCreate,
     StationReadingOut,
-    StationWithLatestReading
+    StationWithLatestReading,
+    WaterReadingCreate,
+    WaterReadingResponse
 )
 
 from app.services.epa_service import fetch_epa_data
@@ -29,6 +32,7 @@ router = APIRouter(prefix="/water", tags=["Water"])
 # Safety Logic
 # -------------------------------------------------
 def get_safety_status(parameter: str, value: float) -> str:
+
     if parameter.lower() == "ph":
         if value < 6.5 or value > 8.5:
             return "red"
@@ -48,13 +52,15 @@ def create_station(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+
     if current_user.role not in ["admin", "authority"]:
         raise HTTPException(
             status_code=403,
             detail="Only admin or authority can create stations"
         )
 
-    db_station = WaterStation(**station.dict())
+    db_station = WaterStation(**station.model_dump())
+
     db.add(db_station)
     db.commit()
     db.refresh(db_station)
@@ -71,11 +77,6 @@ def create_reading(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.role not in ["admin", "authority"]:
-        raise HTTPException(
-            status_code=403,
-            detail="Only admin or authority can add readings"
-        )
 
     station = db.query(WaterStation).filter(
         WaterStation.id == reading.station_id
@@ -84,7 +85,8 @@ def create_reading(
     if not station:
         raise HTTPException(status_code=404, detail="Station not found")
 
-    db_reading = StationReading(**reading.dict())
+    db_reading = StationReading(**reading.model_dump())
+
     db.add(db_reading)
     db.commit()
     db.refresh(db_reading)
@@ -93,7 +95,7 @@ def create_reading(
 
 
 # -------------------------------------------------
-# Fetch EPA API Data and Store in DB
+# Fetch EPA API Data
 # -------------------------------------------------
 @router.get("/fetch-epa")
 async def fetch_and_store_epa_data(
@@ -101,36 +103,38 @@ async def fetch_and_store_epa_data(
     parameter: str,
     db: Session = Depends(get_db)
 ):
+
     data = await fetch_epa_data(state, parameter)
 
-    if not data or "Results" not in data or not data["Results"]:
+    if not data or "Results" not in data:
         return {"message": "No EPA data found"}
 
     saved_readings = []
 
-    for item in data["Results"][:5]:  # limit for safety
+    for item in data["Results"][:5]:
 
-        # Try to find station by name
         station_name = item.get("MonitoringLocationName", "EPA Station")
 
         station = db.query(WaterStation).filter(
             WaterStation.name == station_name
         ).first()
 
-        # If station not exists → create it
         if not station:
+
             station = WaterStation(
                 name=station_name,
-                location=item.get("MonitoringLocationName", "Unknown"),
+                location=station_name,
                 latitude=float(item.get("LatitudeMeasure", 0) or 0),
                 longitude=float(item.get("LongitudeMeasure", 0) or 0),
                 managed_by="EPA"
             )
+
             db.add(station)
             db.commit()
             db.refresh(station)
 
         value = item.get("ResultMeasureValue")
+
         if not value:
             continue
 
@@ -158,39 +162,27 @@ async def fetch_and_store_epa_data(
 # -------------------------------------------------
 @router.get("/stations", response_model=List[WaterStationOut])
 def get_all_stations(db: Session = Depends(get_db)):
+
     return db.query(WaterStation).all()
 
 
 # -------------------------------------------------
-# Get Single Station
-# -------------------------------------------------
-@router.get("/stations/{station_id}", response_model=WaterStationOut)
-def get_station(station_id: int, db: Session = Depends(get_db)):
-    station = db.query(WaterStation).filter(
-        WaterStation.id == station_id
-    ).first()
-
-    if not station:
-        raise HTTPException(status_code=404, detail="Station not found")
-
-    return station
-
-
-# -------------------------------------------------
-# Get All Readings
+# Get All Station Readings
 # -------------------------------------------------
 @router.get("/readings", response_model=List[StationReadingOut])
 def get_all_readings(db: Session = Depends(get_db)):
+
     return db.query(StationReading).all()
 
 
 # -------------------------------------------------
-# Stations with Latest Reading (Map Endpoint)
+# Stations with Latest Reading
 # -------------------------------------------------
 @router.get("/stations/latest", response_model=List[StationWithLatestReading])
 def get_stations_with_latest_readings(db: Session = Depends(get_db)):
 
     stations = db.query(WaterStation).all()
+
     result = []
 
     for station in stations:
@@ -203,6 +195,7 @@ def get_stations_with_latest_readings(db: Session = Depends(get_db)):
         )
 
         status = "unknown"
+
         if latest:
             status = get_safety_status(latest.parameter, latest.value)
 
@@ -213,3 +206,24 @@ def get_stations_with_latest_readings(db: Session = Depends(get_db)):
         })
 
     return result
+
+
+# -------------------------------------------------
+# Simple WaterReading API (team code)
+# -------------------------------------------------
+@router.post("/", response_model=WaterReadingResponse)
+def add_reading(reading: WaterReadingCreate, db: Session = Depends(get_db)):
+
+    new_reading = WaterReading(**reading.model_dump())
+
+    db.add(new_reading)
+    db.commit()
+    db.refresh(new_reading)
+
+    return new_reading
+
+
+@router.get("/", response_model=list[WaterReadingResponse])
+def get_simple_readings(db: Session = Depends(get_db)):
+
+    return db.query(WaterReading).all()
