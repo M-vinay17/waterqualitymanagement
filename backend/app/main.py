@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import user, auth, water
+from app.routes import user, auth, water, search
 from app.core.database import engine, Base
 
 from app.models import user as user_model
 from app.models import water_reading
+from app.models import search as search_model
 
 app = FastAPI()
 
@@ -16,6 +17,7 @@ Base.metadata.create_all(bind=engine)
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(water.router)
+app.include_router(search.router)
 
 # CORS configuration
 app.add_middleware(
