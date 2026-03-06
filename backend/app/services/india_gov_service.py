@@ -29,7 +29,7 @@ PARAM_UNITS = {
 
 async def get_india_stations(
     state: str = "Andhra Pradesh",
-    limit: int = 30
+    limit: int = 100
 ) -> list[dict]:
     """
     Returns unique station list filtered by state.

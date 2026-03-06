@@ -187,8 +187,8 @@ def get_simple_readings(db: Session = Depends(get_db)):
 
 @router.get("/india/stations")
 async def fetch_india_stations(
-    state: str = "Andhra Pradesh",
-    limit: int = 30
+    state: str = "State name",
+    limit: int = 100
 ):
     """
     Fetch water monitoring stations from data.gov.in.
@@ -217,8 +217,8 @@ async def fetch_india_stations(
 
 @router.get("/india/readings")
 async def fetch_india_readings(
-    state: str = "Andhra Pradesh",
-    limit: int = 50
+    state: str = "State name",
+    limit: int = 100
 ):
     """
     Fetch water quality readings from data.gov.in.
