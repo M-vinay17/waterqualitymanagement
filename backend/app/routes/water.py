@@ -187,29 +187,25 @@ def get_simple_readings(db: Session = Depends(get_db)):
 
 @router.get("/india/stations")
 async def fetch_india_stations(
-    state: str    = "Andhra Pradesh",
-    district: str = "Kadapa",
-    limit: int    = 30
+    state: str = "Andhra Pradesh",
+    limit: int = 30
 ):
     """
     Fetch water monitoring stations from data.gov.in.
-    Filter by state and district.
+    Filter by state.
 
     Examples:
-      ?state=Andhra Pradesh&district=Kadapa
-      ?state=Andhra Pradesh&district=Krishna
-      ?state=Telangana&district=Hyderabad
+      ?state=Andhra Pradesh
+      ?state=Telangana
     """
     stations = await get_india_stations(
         state=state,
-        district=district,
         limit=limit
     )
 
     return {
         "source":   "INDIA_GOV",
         "state":    state,
-        "district": district,
         "count":    len(stations),
         "stations": stations
     }
@@ -221,24 +217,21 @@ async def fetch_india_stations(
 
 @router.get("/india/readings")
 async def fetch_india_readings(
-    state: str    = "Andhra Pradesh",
-    district: str = "Kadapa",
-    limit: int    = 50
+    state: str = "Andhra Pradesh",
+    limit: int = 50
 ):
     """
     Fetch water quality readings from data.gov.in.
-    Filter by state and district.
+    Filter by state.
     """
     readings = await get_india_readings(
         state=state,
-        district=district,
         limit=limit
     )
 
     return {
         "source":   "INDIA_GOV",
         "state":    state,
-        "district": district,
         "count":    len(readings),
         "readings": readings
     }
@@ -250,9 +243,8 @@ async def fetch_india_readings(
 
 @router.get("/fetch-india")
 async def fetch_and_store_india_data(
-    state: str    = "Andhra Pradesh",
-    district: str = "Kadapa",
-    db: Session   = Depends(get_db)
+    state: str  = "Andhra Pradesh",
+    db: Session = Depends(get_db)
 ):
     """
     Fetch water quality data from data.gov.in
@@ -263,12 +255,11 @@ async def fetch_and_store_india_data(
     """
     readings = await get_india_readings(
         state=state,
-        district=district,
         limit=100
     )
 
     if not readings:
-        return {"message": f"No data found for {district}, {state}"}
+        return {"message": f"No data found for {state}"}
 
     saved = []
 
@@ -317,7 +308,6 @@ async def fetch_and_store_india_data(
     return {
         "message":        "Data saved successfully",
         "state":          state,
-        "district":       district,
         "readings_saved": len(saved)
     }
 

@@ -24,19 +24,18 @@ PARAM_UNITS = {
 
 
 # =========================================================
-# GET STATIONS  (state + district filter)
+# GET STATIONS  (state filter)
 # =========================================================
 
 async def get_india_stations(
-    state: str    = "Andhra Pradesh",
-    district: str = "Kadapa",          # ← your district!
-    limit: int    = 30
+    state: str = "Andhra Pradesh",
+    limit: int = 30
 ) -> list[dict]:
     """
-    Returns unique station list filtered by state AND district.
-    Default: Andhra Pradesh → Kadapa
+    Returns unique station list filtered by state.
+    Default: Andhra Pradesh
     """
-    raw = await _fetch_raw(state=state, district=district, limit=limit)
+    raw = await _fetch_raw(state=state, limit=limit)
 
     if not raw:
         return []
@@ -54,15 +53,15 @@ async def get_india_stations(
 
         stations.append({
             "name":            name,
-            "location":        _location(record, state, district),
+            "location":        _location(record, state),
             "latitude":        _float(record.get("Latitude") or record.get("Lat")) or 0.0,
             "longitude":       _float(record.get("Longitude") or record.get("Long")) or 0.0,
             "managed_by":      record.get("Agency") or "CPCB India",
-            "external_id":     _make_ext_id(name, state, district),
+            "external_id":     _make_ext_id(name, state),
             "external_source": "india_gov",
             # extra info
             "state":           record.get("State")    or state,
-            "district":        record.get("District") or district,
+            "district":        record.get("District") or "",
             "river":           record.get("River")    or record.get("Water_Body"),
         })
 
@@ -70,19 +69,18 @@ async def get_india_stations(
 
 
 # =========================================================
-# GET READINGS  (state + district filter)
+# GET READINGS  (state filter)
 # =========================================================
 
 async def get_india_readings(
-    state: str    = "Andhra Pradesh",
-    district: str = "Kadapa",          # ← your district!
-    limit: int    = 100
+    state: str = "Andhra Pradesh",
+    limit: int = 100
 ) -> list[dict]:
     """
-    Returns readings filtered by state AND district.
-    Default: Andhra Pradesh → Kadapa
+    Returns readings filtered by state.
+    Default: Andhra Pradesh
     """
-    raw = await _fetch_raw(state=state, district=district, limit=limit)
+    raw = await _fetch_raw(state=state, limit=limit)
 
     if not raw:
         return []
@@ -157,14 +155,14 @@ async def get_india_readings(
         readings.append({
             # station info
             "name":            name,
-            "location":        _location(record, state, district),
+            "location":        _location(record, state),
             "latitude":        _float(record.get("Latitude")  or record.get("Lat"))  or 0.0,
             "longitude":       _float(record.get("Longitude") or record.get("Long")) or 0.0,
             "managed_by":      record.get("Agency") or "CPCB India",
-            "external_id":     _make_ext_id(name, state, district),
+            "external_id":     _make_ext_id(name, state),
             "external_source": "india_gov",
             "state":           record.get("State")    or state,
-            "district":        record.get("District") or district,
+            "district":        record.get("District") or "",
             "river":           record.get("River")    or record.get("Water_Body"),
             # reading info
             "recorded_at":     recorded_at,
@@ -204,13 +202,11 @@ async def check_india_gov_status() -> dict:
 
 async def _fetch_raw(
     state: str,
-    district: str = None,
-    limit: int    = 100,
-    offset: int   = 0,
+    limit: int  = 100,
+    offset: int = 0,
 ) -> dict | None:
     """
-    Calls data.gov.in API with state + district filters.
-    district is optional — if None, fetches entire state.
+    Calls data.gov.in API with state filter only.
     """
     url    = f"{BASE_URL}/{RESOURCE_ID}"
     params = {
@@ -220,10 +216,6 @@ async def _fetch_raw(
         "limit":          limit,
         "filters[State]": state,
     }
-
-    # Add district filter only if provided
-    if district:
-        params["filters[District]"] = district
 
     async with httpx.AsyncClient(timeout=30) as client:
         try:
@@ -247,14 +239,14 @@ def _station_name(record: dict) -> str:
     )
 
 
-def _location(record: dict, state: str, district: str) -> str:
+def _location(record: dict, state: str) -> str:
     river    = record.get("River") or record.get("Water_Body") or ""
-    district = record.get("District") or district or ""
+    district = record.get("District") or ""
     return f"{river} - {district} - {state}".strip(" -") or state
 
 
-def _make_ext_id(name: str, state: str, district: str) -> str:
-    return f"india_gov_{state}_{district}_{name}".lower().replace(" ", "_")
+def _make_ext_id(name: str, state: str) -> str:
+    return f"india_gov_{state}_{name}".lower().replace(" ", "_")
 
 
 def _float(value) -> float | None:
