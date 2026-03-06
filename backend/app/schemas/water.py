@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
+from typing import Optional, Dict
 from datetime import datetime
 
 
@@ -100,3 +100,85 @@ class WaterReadingResponse(WaterReadingBase):
     recorded_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# =====================================================
+# India Gov Schemas  ← NEW
+# Used by routes/water.py India Gov endpoints
+# =====================================================
+
+class IndiaGovParameterOut(BaseModel):
+    """One water quality parameter — e.g. ph, do, bod"""
+    value: Optional[float] = None
+    unit: Optional[str] = ""
+
+
+class IndiaGovStationOut(BaseModel):
+    """
+    Station from data.gov.in
+    Used by: GET /water/india/stations
+    """
+    name: str
+    location: str
+    latitude: float
+    longitude: float
+    managed_by: str
+    external_id: str
+    external_source: str
+    state: Optional[str] = None
+    district: Optional[str] = None
+    river: Optional[str] = None
+
+
+class IndiaGovReadingOut(BaseModel):
+    """
+    One reading record from data.gov.in
+    Contains station info + all water quality parameters
+    Used by: GET /water/india/readings
+    """
+    # Station info
+    name: str
+    location: str
+    latitude: float
+    longitude: float
+    managed_by: str
+    external_id: str
+    state: Optional[str] = None
+    district: Optional[str] = None
+    river: Optional[str] = None
+    recorded_at: datetime
+
+    # All water quality parameters
+    parameters: Dict[str, IndiaGovParameterOut]
+
+
+class IndiaGovStationsResponse(BaseModel):
+    """
+    Full response for GET /water/india/stations
+    """
+    source: str = "INDIA_GOV"
+    state: str
+    district: str
+    count: int
+    stations: list[IndiaGovStationOut]
+
+
+class IndiaGovReadingsResponse(BaseModel):
+    """
+    Full response for GET /water/india/readings
+    """
+    source: str = "INDIA_GOV"
+    state: str
+    district: str
+    count: int
+    readings: list[IndiaGovReadingOut]
+
+
+class IndiaGovFetchResponse(BaseModel):
+    """
+    Response for GET /water/fetch-india (save to DB)
+    """
+    message: str
+    state: str
+    district: str
+    readings_saved: int

@@ -10,7 +10,6 @@ from app.core.config import settings
 BASE_URL    = "https://api.data.gov.in/resource"
 RESOURCE_ID = "19697d76-442e-4d76-aeae-13f8a17c91e1"
 
-# Maps parameter name → unit string (matches your unit column)
 PARAM_UNITS = {
     "ph":             "",
     "do":             "mg/l",
@@ -25,22 +24,19 @@ PARAM_UNITS = {
 
 
 # =========================================================
-# GET STATIONS
-# Same return pattern as get_epa_stations / get_usgs_stations
+# GET STATIONS  (state + district filter)
 # =========================================================
 
 async def get_india_stations(
-    state: str = "Andhra Pradesh",
-    limit: int = 30
+    state: str    = "Andhra Pradesh",
+    district: str = "Kadapa",          # ← your district!
+    limit: int    = 30
 ) -> list[dict]:
     """
-    Returns unique station list for the given state.
-
-    Each dict maps directly to WaterStation model:
-        name, location, latitude, longitude,
-        managed_by, external_id, external_source
+    Returns unique station list filtered by state AND district.
+    Default: Andhra Pradesh → Kadapa
     """
-    raw = await _fetch_raw(state=state, limit=limit)
+    raw = await _fetch_raw(state=state, district=district, limit=limit)
 
     if not raw:
         return []
@@ -57,37 +53,36 @@ async def get_india_stations(
         seen.add(name)
 
         stations.append({
-            # --- Maps exactly to WaterStation columns ---
             "name":            name,
-            "location":        _location(record, state),
+            "location":        _location(record, state, district),
             "latitude":        _float(record.get("Latitude") or record.get("Lat")) or 0.0,
             "longitude":       _float(record.get("Longitude") or record.get("Long")) or 0.0,
             "managed_by":      record.get("Agency") or "CPCB India",
-            "external_id":     _make_ext_id(name, state),
+            "external_id":     _make_ext_id(name, state, district),
             "external_source": "india_gov",
+            # extra info
+            "state":           record.get("State")    or state,
+            "district":        record.get("District") or district,
+            "river":           record.get("River")    or record.get("Water_Body"),
         })
 
     return stations
 
 
 # =========================================================
-# GET READINGS
-# Same return pattern as get_epa_readings / get_usgs_readings
+# GET READINGS  (state + district filter)
 # =========================================================
 
 async def get_india_readings(
-    state: str = "Andhra Pradesh",
-    limit: int = 100
+    state: str    = "Andhra Pradesh",
+    district: str = "Kadapa",          # ← your district!
+    limit: int    = 100
 ) -> list[dict]:
     """
-    Returns readings from data.gov.in.
-
-    Each dict contains station info + parameters dict.
-    routes/water.py loops parameters to create one
-    StationReading row per parameter — matching your
-    exact  parameter / value / unit / source columns.
+    Returns readings filtered by state AND district.
+    Default: Andhra Pradesh → Kadapa
     """
-    raw = await _fetch_raw(state=state, limit=limit)
+    raw = await _fetch_raw(state=state, district=district, limit=limit)
 
     if not raw:
         return []
@@ -98,11 +93,6 @@ async def get_india_readings(
 
         name = _station_name(record)
 
-        # Each key in parameters → one StationReading row:
-        #   parameter = key   (e.g. "ph")
-        #   value     = float
-        #   unit      = unit string
-        #   source    = "india_gov"
         parameters = {
             "ph": {
                 "value": _float(record.get("pH") or record.get("ph")),
@@ -158,7 +148,6 @@ async def get_india_readings(
             },
         }
 
-        # CPCB data has a Year field e.g. "2018"
         year = record.get("Year") or record.get("year")
         try:
             recorded_at = datetime(int(year), 1, 1) if year else datetime.utcnow()
@@ -166,14 +155,17 @@ async def get_india_readings(
             recorded_at = datetime.utcnow()
 
         readings.append({
-            # station info — used to upsert WaterStation
+            # station info
             "name":            name,
-            "location":        _location(record, state),
+            "location":        _location(record, state, district),
             "latitude":        _float(record.get("Latitude")  or record.get("Lat"))  or 0.0,
             "longitude":       _float(record.get("Longitude") or record.get("Long")) or 0.0,
             "managed_by":      record.get("Agency") or "CPCB India",
-            "external_id":     _make_ext_id(name, state),
+            "external_id":     _make_ext_id(name, state, district),
             "external_source": "india_gov",
+            "state":           record.get("State")    or state,
+            "district":        record.get("District") or district,
+            "river":           record.get("River")    or record.get("Water_Body"),
             # reading info
             "recorded_at":     recorded_at,
             "parameters":      parameters,
@@ -183,7 +175,7 @@ async def get_india_readings(
 
 
 # =========================================================
-# STATUS CHECK — same pattern as check_epa_status()
+# STATUS CHECK
 # =========================================================
 
 async def check_india_gov_status() -> dict:
@@ -210,7 +202,16 @@ async def check_india_gov_status() -> dict:
 # PRIVATE HELPERS
 # =========================================================
 
-async def _fetch_raw(state: str, limit: int = 100, offset: int = 0) -> dict | None:
+async def _fetch_raw(
+    state: str,
+    district: str = None,
+    limit: int    = 100,
+    offset: int   = 0,
+) -> dict | None:
+    """
+    Calls data.gov.in API with state + district filters.
+    district is optional — if None, fetches entire state.
+    """
     url    = f"{BASE_URL}/{RESOURCE_ID}"
     params = {
         "api-key":        settings.INDIA_GOV_API_KEY,
@@ -219,6 +220,11 @@ async def _fetch_raw(state: str, limit: int = 100, offset: int = 0) -> dict | No
         "limit":          limit,
         "filters[State]": state,
     }
+
+    # Add district filter only if provided
+    if district:
+        params["filters[District]"] = district
+
     async with httpx.AsyncClient(timeout=30) as client:
         try:
             r = await client.get(url, params=params)
@@ -241,13 +247,14 @@ def _station_name(record: dict) -> str:
     )
 
 
-def _location(record: dict, state: str) -> str:
-    river = record.get("River") or record.get("Water_Body") or ""
-    return f"{river} - {state}".strip(" -") or state
+def _location(record: dict, state: str, district: str) -> str:
+    river    = record.get("River") or record.get("Water_Body") or ""
+    district = record.get("District") or district or ""
+    return f"{river} - {district} - {state}".strip(" -") or state
 
 
-def _make_ext_id(name: str, state: str) -> str:
-    return f"india_gov_{state}_{name}".lower().replace(" ", "_")
+def _make_ext_id(name: str, state: str, district: str) -> str:
+    return f"india_gov_{state}_{district}_{name}".lower().replace(" ", "_")
 
 
 def _float(value) -> float | None:
