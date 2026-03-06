@@ -10,14 +10,18 @@ from app.models import water_reading
 from app.models import water_station
 from app.models import station_readings
 from app.models import search as search_model
+from app.models import report as report_model
+
+# Import routes
+from app.routes import water_station, report
 
 app = FastAPI(
     title="AquaWatch API",
-    description="Water Quality Monitoring — EPA, USGS, WHO integrated",
+    description="Water Quality Monitoring System Backend API",
     version="1.0.0"
 )
 
-# ── CORS first, before routers ─────────────────────────────────────────────── ← moved up
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -29,20 +33,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Create database tables ────────────────────────────────────────────────────
+# Create database tables
 Base.metadata.create_all(bind=engine)
 
-# ── Include routes ────────────────────────────────────────────────────────────
+# Include routes
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(water.router)
 app.include_router(search.router)
+app.include_router(water_station.router)
+app.include_router(report.router)
 
-# ── Root endpoints ────────────────────────────────────────────────────────────
+# Root endpoints
 @app.get("/")
 def home():
     return {"message": "Backend is running successfully!"}
 
-@app.get("/health")                          # ← added: useful to check if server is up
+@app.get("/health")
 def health():
     return {"status": "healthy"}
