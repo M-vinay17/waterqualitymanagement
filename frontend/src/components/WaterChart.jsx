@@ -1,20 +1,45 @@
-import React from 'react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import React from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-// Line chart showing water quality trend (7 days)
-export default function WaterChart({ data }) {
+const WaterChart = ({ data }) => {
   return (
-    <div className="w-full h-72 bg-white rounded-lg shadow-sm p-4">
-      <h3 className="text-sm font-medium text-gray-700 mb-2">Water Quality Trend (Last 7 days)</h3>
+    <div style={{
+      width: "100%",
+      height: "300px",
+      background: "white",
+      borderRadius: "10px",
+      padding: "20px",
+      marginTop: "20px",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+    }}>
+      <h3 style={{ marginBottom: "10px" }}>
+        Water Quality Trend (Last 7 Days)
+      </h3>
+
       <ResponsiveContainer width="100%" height="85%">
-        <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+        <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="day" />
           <YAxis />
           <Tooltip />
-          <Line type="monotone" dataKey="quality" stroke="#0ea5e9" strokeWidth={2} dot={{ r: 3 }} />
+          <Line
+            type="monotone"
+            dataKey="quality"
+            stroke="#0ea5e9"
+            strokeWidth={2}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>
-  )
-}
+  );
+};
+
+export default WaterChart;
