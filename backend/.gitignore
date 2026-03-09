@@ -14,3 +14,15 @@ venv/
 # Node
 node_modules/
 
+# Environment variables
+backend/.env
+
+# Python cache
+backend/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
