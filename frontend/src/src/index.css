@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@keyframes ripple {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1); opacity: 0.3; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+.animate-ripple-slow {
+  animation: ripple 6s infinite;
+}
+
+.animate-ripple-medium {
+  animation: ripple 4s infinite;
+}
+
+.animate-ripple-fast {
+  animation: ripple 3s infinite;
+}
+
+.animate-ripple-slower {
+  animation: ripple 8s infinite;
+}
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+@keyframes pulse-slower { animation: pulse-slow 12s infinite; }
+@keyframes pulse-slow   { animation: pulse-slow 8s infinite; }
+@keyframes wave-slow {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-1600px); }
+}
+.animate-wave-slow { animation: wave-slow 30s linear infinite; }
+.animate-fade-in {
+  animation: fadeIn 1.2s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
