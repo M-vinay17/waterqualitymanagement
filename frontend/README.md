@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Water Quality Monitor — Frontend
 
 This folder contains a React + Vite frontend for the Water Quality Monitoring dashboard.

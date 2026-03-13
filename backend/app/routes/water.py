@@ -77,7 +77,6 @@ def get_safety_status(parameter: str, value: float) -> str:
 @router.post("/stations", response_model=WaterStationOut, status_code=201)
 def create_station(
     station: WaterStationCreate,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     if current_user.role not in ["admin", "authority"]:
