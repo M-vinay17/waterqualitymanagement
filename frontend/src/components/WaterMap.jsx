@@ -1,245 +1,322 @@
-import React, { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
-  useMap,
   LayersControl,
-  ZoomControl
+  LayerGroup
 } from "react-leaflet";
+
 import MarkerClusterGroup from "react-leaflet-cluster";
+import axios from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "react-leaflet-cluster/dist/assets/MarkerCluster.css";
-import "react-leaflet-cluster/dist/assets/MarkerCluster.Default.css";
 
-/* ================= LEAFLET ICON FIX ================= */
-delete L.Icon.Default.prototype._getIconUrl;
+const { BaseLayer, Overlay } = LayersControl;
 
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-  iconUrl:
-    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png"
-});
 
-/* ================= AUTO FIT BOUNDS ================= */
-function AutoFit({ stations }) {
-  const map = useMap();
+/* ---------------- Marker Icons ---------------- */
 
-  useEffect(() => {
-    if (!stations.length) return;
-
-    const bounds = L.latLngBounds(
-      stations.map((s) => [s.latitude, s.longitude])
-    );
-
-    map.flyToBounds(bounds, {
-      padding: [100, 100],
-      duration: 1.2,
-      maxZoom: 14
-    });
-  }, [stations, map]);
-
-  return null;
-}
-
-/* ================= LEGEND ================= */
-function Legend() {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        bottom: 20,
-        right: 20,
-        background: "white",
-        padding: "14px 18px",
-        borderRadius: 14,
-        boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
-        fontSize: 14,
-        zIndex: 1000
-      }}
-    >
-      <div style={{ fontWeight: 600, marginBottom: 10 }}>
-        Water Quality
-      </div>
-
-      <LegendItem color="#16a34a" label="Safe" />
-      <LegendItem color="#f59e0b" label="Moderate" />
-      <LegendItem color="#dc2626" label="Unsafe" />
-    </div>
-  );
-}
-
-function LegendItem({ color, label }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
-      <span
-        style={{
-          width: 14,
-          height: 14,
-          background: color,
-          borderRadius: "50%",
-          marginRight: 10
-        }}
-      ></span>
-      {label}
-    </div>
-  );
-}
-
-/* ================= CUSTOM MARKER ================= */
-const createWaterIcon = (color) =>
-  L.divIcon({
-    className: "",
-    html: `
-      <div style="
-        width:24px;
-        height:24px;
-        background:${color};
-        border-radius:50%;
-        border:3px solid white;
-        box-shadow:0 6px 14px rgba(0,0,0,0.4);
-        transition:transform 0.2s ease;
-      "></div>
-    `,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
+function createIcon(color) {
+  return new L.Icon({
+    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
+    shadowUrl:
+      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
   });
+}
+
+const greenIcon = createIcon("green");
+const yellowIcon = createIcon("yellow");
+const redIcon = createIcon("red");
+const blueIcon = createIcon("blue");
+
 
 export default function WaterMap() {
+
   const [stations, setStations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [govStations, setGovStations] = useState([]);
+  const [apiStatus, setApiStatus] = useState("checking");
+
+
+/* ---------------- Load Local Stations ---------------- */
+
+  const loadStations = async () => {
+
+    try {
+
+      const res = await axios.get(
+        "http://localhost:8000/water/stations/latest"
+      );
+
+      setStations(res.data);
+
+    } catch (err) {
+
+      console.error("Backend station error:", err);
+
+    }
+
+  };
+
+
+/* ---------------- Load Government Stations ---------------- */
+
+  const loadGovStations = async () => {
+
+    try {
+
+      const res = await axios.get(
+        "http://localhost:8000/water/india/stations"
+      );
+
+      setGovStations(res.data.stations || []);
+      setApiStatus("online");
+
+    } catch (err) {
+
+      console.error("Government API error:", err);
+      setApiStatus("offline");
+
+    }
+
+  };
+
+
+/* ---------------- Marker Color Logic ---------------- */
+
+  const getMarkerIcon = (status) => {
+
+    if (status === "safe") return greenIcon;
+    if (status === "warning") return yellowIcon;
+    if (status === "danger") return redIcon;
+
+    return blueIcon;
+  };
+
+
+/* ---------------- Initial Load ---------------- */
 
   useEffect(() => {
-    fetchStations();
+
+    loadStations();
+    loadGovStations();
+
+    const interval = setInterval(() => {
+      loadGovStations();
+    }, 10000);
+
+    return () => clearInterval(interval);
+
   }, []);
 
-  const fetchStations = async () => {
-    try {
-      const res = await axios.get("http://127.0.0.1:8000/water/");
-      setStations(res.data);
-    } catch (err) {
-      console.error("Fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getColor = (status) => {
-    if (!status) return "#6b7280";
-    const s = status.toLowerCase();
-    if (s === "safe") return "#16a34a";
-    if (s === "unsafe") return "#dc2626";
-    return "#f59e0b";
-  };
-
-  const memoStations = useMemo(() => stations, [stations]);
-
-  if (loading) {
-    return (
-      <div className="h-[600px] flex items-center justify-center bg-white rounded-2xl shadow-xl">
-        Loading map...
-      </div>
-    );
-  }
-
-  if (!stations.length) {
-    return (
-      <div className="h-[600px] flex items-center justify-center bg-white rounded-2xl shadow-xl">
-        No water stations available.
-      </div>
-    );
-  }
 
   return (
-    <div className="relative h-[600px] rounded-2xl overflow-hidden shadow-2xl">
-      <MapContainer
-        center={[20, 0]}
-        zoom={3}
-        minZoom={3}
-        maxZoom={18}
-        zoomControl={false}
-        scrollWheelZoom
-        zoomDelta={0.25}
-        zoomSnap={0.25}
-        worldCopyJump={true}
-        maxBounds={[
-          [-85, -180],
-          [85, 180]
-        ]}
-        className="h-full w-full"
+
+    <div style={{ height: "600px", width: "100%", position: "relative" }}>
+
+
+{/* ---------------- API Status Indicator ---------------- */}
+
+      <div
+        style={{
+          position: "absolute",
+          top: "10px",
+          left: "50px",
+          zIndex: 1000,
+          background: "white",
+          padding: "6px 12px",
+          borderRadius: "6px",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+          fontWeight: "bold"
+        }}
       >
-        <ZoomControl position="bottomleft" />
+
+        Government Water API :
+
+        {" "}
+
+        {apiStatus === "online" && (
+          <span style={{ color: "green" }}>🟢 Online</span>
+        )}
+
+        {apiStatus === "offline" && (
+          <span style={{ color: "red" }}>🔴 Offline</span>
+        )}
+
+        {apiStatus === "checking" && (
+          <span style={{ color: "orange" }}>🟡 Checking</span>
+        )}
+
+      </div>
+
+
+{/* ---------------- Map ---------------- */}
+
+      <MapContainer
+        center={[22.9734, 78.6569]}
+        zoom={5}
+        style={{ height: "100%", width: "100%" }}
+      >
 
         <LayersControl position="topright">
 
-          <LayersControl.BaseLayer checked name="Light Map">
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-              attribution="&copy; OpenStreetMap & CARTO"
-            />
-          </LayersControl.BaseLayer>
 
-          <LayersControl.BaseLayer name="Dark Map">
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution="&copy; OpenStreetMap & CARTO"
-            />
-          </LayersControl.BaseLayer>
+{/* ---------------- Base Maps ---------------- */}
 
-          <LayersControl.BaseLayer name="Satellite">
+          <BaseLayer checked name="Street Map">
+
             <TileLayer
+              attribution="OpenStreetMap"
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+
+          </BaseLayer>
+
+
+          <BaseLayer name="Satellite">
+
+            <TileLayer
+              attribution="Esri"
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              attribution="Tiles &copy; Esri"
             />
-          </LayersControl.BaseLayer>
+
+          </BaseLayer>
+
+
+          <BaseLayer name="Topographic">
+
+            <TileLayer
+              attribution="OpenTopoMap"
+              url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+            />
+
+          </BaseLayer>
+
+
+{/* ---------------- Your Monitoring Stations ---------------- */}
+
+          <Overlay checked name="Monitoring Stations">
+
+            <LayerGroup>
+
+              <MarkerClusterGroup>
+
+                {stations.map((s, i) => {
+
+                  const lat = Number(s.station?.latitude);
+                  const lng = Number(s.station?.longitude);
+
+                  if (
+                    !lat ||
+                    !lng ||
+                    lat > 90 ||
+                    lat < -90 ||
+                    lng > 180 ||
+                    lng < -180
+                  ) return null;
+
+                  return (
+
+                    <Marker
+                      key={i}
+                      position={[lat, lng]}
+                      icon={getMarkerIcon(s.safety_status)}
+                    >
+
+                      <Popup>
+
+                        <div style={{ minWidth: "220px" }}>
+
+                          <h3>{s.station.name}</h3>
+
+                          <p><b>Location:</b> {s.station.location}</p>
+
+                          <p><b>Managed By:</b> {s.station.managed_by}</p>
+
+                          <p><b>Status:</b> {s.safety_status}</p>
+
+                          {s.latest_reading && (
+                            <p>
+                              <b>{s.latest_reading.parameter}</b>
+                              {" : "}
+                              {s.latest_reading.value}
+                            </p>
+                          )}
+
+                        </div>
+
+                      </Popup>
+
+                    </Marker>
+
+                  );
+
+                })}
+
+              </MarkerClusterGroup>
+
+            </LayerGroup>
+
+          </Overlay>
+
+
+{/* ---------------- Government Stations ---------------- */}
+
+          <Overlay name="Government Monitoring Stations">
+
+            <LayerGroup>
+
+              <MarkerClusterGroup>
+
+                {govStations.map((s, i) => {
+
+                  if (!s.latitude || !s.longitude) return null;
+
+                  return (
+
+                    <Marker
+                      key={i}
+                      position={[s.latitude, s.longitude]}
+                      icon={blueIcon}
+                    >
+
+                      <Popup>
+
+                        <div>
+
+                          <h3>{s.name}</h3>
+
+                          <p><b>River:</b> {s.river}</p>
+
+                          <p><b>District:</b> {s.district}</p>
+
+                          <p><b>State:</b> {s.state}</p>
+
+                        </div>
+
+                      </Popup>
+
+                    </Marker>
+
+                  );
+
+                })}
+
+              </MarkerClusterGroup>
+
+            </LayerGroup>
+
+          </Overlay>
 
         </LayersControl>
 
-        <AutoFit stations={memoStations} />
-
-        <MarkerClusterGroup
-          chunkedLoading
-          spiderfyOnMaxZoom
-          showCoverageOnHover={false}
-          maxClusterRadius={50}
-        >
-          {memoStations.map((station) => (
-            <Marker
-              key={station.id}
-              position={[station.latitude, station.longitude]}
-              icon={createWaterIcon(getColor(station.status))}
-            >
-              <Popup>
-                <div style={{ minWidth: 220 }}>
-                  <h3 style={{ fontWeight: 600, marginBottom: 8 }}>
-                    {station.station_name}
-                  </h3>
-                  <div>pH: {station.ph}</div>
-                  <div>Turbidity: {station.turbidity}</div>
-                  <div>Dissolved Oxygen: {station.dissolved_oxygen}</div>
-                  <div
-                    style={{
-                      marginTop: 8,
-                      fontWeight: 600,
-                      color: getColor(station.status)
-                    }}
-                  >
-                    Status: {station.status}
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MarkerClusterGroup>
       </MapContainer>
 
-      <Legend />
     </div>
+
   );
+
 }

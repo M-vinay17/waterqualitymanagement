@@ -14,9 +14,3 @@ venv/
 # Node
 node_modules/
 
-# Large datasets — Git lo push cheyyakudadu
-*.zip
-*.csv
-GFQA_v3/
-data/
-gemstat_loader.py

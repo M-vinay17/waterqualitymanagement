@@ -11,9 +11,11 @@ from app.models import water_station
 from app.models import station_readings
 from app.models import search as search_model
 from app.models import report as report_model
+from app.models import alert   # ✅ ADDED (for alerts table)
 
 # Import routes
 from app.routes import water_station, report
+from app.routes import alert   # ✅ ADDED (alerts router)
 
 app = FastAPI(
     title="AquaWatch API",
@@ -24,10 +26,7 @@ app = FastAPI(
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000"
-    ],
+    allow_origins=["*"],   # allow all origins (for development)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,11 +42,13 @@ app.include_router(water.router)
 app.include_router(search.router)
 app.include_router(water_station.router)
 app.include_router(report.router)
+app.include_router(alert.router, prefix="/alerts", tags=["Alerts"])   # ✅ ADDED
 
 # Root endpoints
 @app.get("/")
 def home():
     return {"message": "Backend is running successfully!"}
+
 
 @app.get("/health")
 def health():
