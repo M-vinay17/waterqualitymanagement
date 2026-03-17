@@ -1,0 +1,187 @@
+/* PAGE */
+.alerts-page {
+  padding: 25px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1c92d2, #1f7a8c);
+  color: white;
+}
+
+/* TITLES */
+.alerts-title {
+  font-size: 26px;
+  margin-bottom: 20px;
+}
+
+.alerts-log {
+  margin: 30px 0 15px;
+  font-size: 20px;
+}
+
+/* GRID */
+.flash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* CARD */
+.flash-card {
+  height: 180px;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+/* INNER */
+.flash-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 0.6s ease;
+  transform-style: preserve-3d;
+}
+
+.flash-card.flipped .flash-inner {
+  transform: rotateY(180deg);
+}
+
+/* SIDES */
+.flash-front,
+.flash-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  padding: 15px;
+  backface-visibility: hidden;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* FRONT COLORS */
+.flash-front.critical {
+  background: linear-gradient(135deg, #ff3e3e, #ff0000);
+}
+
+.flash-front.high {
+  background: linear-gradient(135deg, #ff9a44, #ff6a00);
+}
+
+.flash-front.medium {
+  background: linear-gradient(135deg, #36d1dc, #5b86e5);
+}
+
+/* GLOW EFFECT */
+.card-glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  box-shadow: inset 0 0 30px rgba(255,255,255,0.2);
+}
+
+/* TEXT */
+.param {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.alert-value {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.alert-severity {
+  margin-top: 5px;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(0,0,0,0.3);
+}
+
+.hint {
+  font-size: 10px;
+  margin-top: 8px;
+  opacity: 0.7;
+}
+
+/* BACK */
+.flash-back {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+  transform: rotateY(180deg);
+}
+
+.desc {
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.meta p {
+  font-size: 12px;
+}
+
+/* TABLE */
+.alerts-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #f5f7fa;   /* light background */
+  color: #1a1a1a;       
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+
+.alerts-table th {
+  padding: 14px;
+  background: #e0e0e0;
+  color: #333;
+  font-weight: 600;
+}
+
+.alerts-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  color: #222;  /* 👈 force visible text */
+}
+
+.alerts-table tr:hover {
+  background: #ececec;
+}
+
+
+
+/* BADGES */
+.severity {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.severity.critical {
+  background: red;
+}
+
+.severity.high {
+  background: orange;
+}
+
+.severity.medium {
+  background: yellow;
+  color: black;
+}
+
+/* BADGE COUNT */
+.alert-badge {
+  background: rgb(78, 40, 40);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-size: 12px;
+  margin-left: 6px;
+}
