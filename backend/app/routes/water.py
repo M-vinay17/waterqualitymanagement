@@ -79,13 +79,12 @@ def create_station(
     station: WaterStationCreate,
     db: Session = Depends(get_db)
 ):
-    if current_user.role not in ["admin", "authority"]:
-        raise HTTPException(403, "Only admin or authority can create stations")
-
     db_station = WaterStation(**station.model_dump())
+
     db.add(db_station)
     db.commit()
     db.refresh(db_station)
+
     return db_station
 
 
