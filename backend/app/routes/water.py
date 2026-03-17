@@ -77,16 +77,14 @@ def get_safety_status(parameter: str, value: float) -> str:
 @router.post("/stations", response_model=WaterStationOut, status_code=201)
 def create_station(
     station: WaterStationCreate,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.role not in ["admin", "authority"]:
-        raise HTTPException(403, "Only admin or authority can create stations")
-
     db_station = WaterStation(**station.model_dump())
+
     db.add(db_station)
     db.commit()
     db.refresh(db_station)
+
     return db_station
 
 

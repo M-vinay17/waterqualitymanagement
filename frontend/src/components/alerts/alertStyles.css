@@ -1,174 +1,245 @@
-/* PAGE */
+/* ================= PAGE ================= */
 .alerts-page {
   padding: 25px;
   min-height: 100vh;
   background: linear-gradient(135deg, #1c92d2, #1f7a8c);
   color: white;
+  font-family: "Segoe UI", sans-serif;
 }
 
-/* TITLES */
+/* ================= TITLES ================= */
 .alerts-title {
   font-size: 26px;
   margin-bottom: 20px;
+  font-weight: 600;
 }
 
 .alerts-log {
-  margin: 30px 0 15px;
+  margin: 35px 0 15px;
   font-size: 20px;
 }
 
-/* GRID */
+/* ================= GRID ================= */
 .flash-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 24px;
+  padding: 10px;
+  margin-bottom: 40px;
 }
 
-/* CARD */
+/* ================= CARD ================= */
 .flash-card {
-  height: 180px;
-  perspective: 1000px;
+  width: 100%;
+  height: 230px;
+  perspective: 1200px;
   cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
-/* INNER */
+.flash-card:hover {
+  transform: translateY(-6px);
+}
+
+/* ================= INNER ================= */
 .flash-inner {
+  position: relative;
   width: 100%;
   height: 100%;
-  position: relative;
-  transition: transform 0.6s ease;
+  transition: transform 0.7s cubic-bezier(.4,.2,.2,1);
   transform-style: preserve-3d;
 }
 
+/* FLIP */
 .flash-card.flipped .flash-inner {
   transform: rotateY(180deg);
 }
 
-/* SIDES */
+/* ================= SIDES ================= */
 .flash-front,
 .flash-back {
   position: absolute;
   width: 100%;
   height: 100%;
-  border-radius: 14px;
-  padding: 15px;
-  backface-visibility: hidden;
+  border-radius: 16px;
+  padding: 18px;
+  box-sizing: border-box;
 
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(14px);
+
+  box-shadow: 
+    0 8px 30px rgba(0,0,0,0.25),
+    inset 0 0 20px rgba(255,255,255,0.08);
 }
 
-/* FRONT COLORS */
+/* ================= FRONT SEVERITY ================= */
 .flash-front.critical {
-  background: linear-gradient(135deg, #ff3e3e, #ff0000);
+  border: 1px solid rgba(255, 0, 0, 0.7);
 }
 
 .flash-front.high {
-  background: linear-gradient(135deg, #ff9a44, #ff6a00);
+  border: 1px solid rgba(255, 165, 0, 0.4);
 }
 
 .flash-front.medium {
-  background: linear-gradient(135deg, #36d1dc, #5b86e5);
+  border: 1px solid rgba(0, 200, 255, 0.4);
 }
 
-/* GLOW EFFECT */
+.flash-front::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 40%;
+  width: 100%;
+  border-radius: 16px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.35),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* ================= GLOW ================= */
 .card-glow {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 14px;
-  box-shadow: inset 0 0 30px rgba(255,255,255,0.2);
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+  opacity: 0.9;
 }
 
-/* TEXT */
+.flash-front.critical .card-glow {
+  background: radial-gradient(circle, rgba(255,0,0,0.3), transparent);
+}
+
+.flash-front.high .card-glow {
+  background: radial-gradient(circle, rgba(255,165,0,0.3), transparent);
+}
+
+.flash-front.medium .card-glow {
+  background: radial-gradient(circle, rgba(0,200,255,0.3), transparent);
+}
+
+/* ================= TEXT ================= */
+.flash-front h3 {
+  font-size: 18px;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
 .param {
-  font-size: 12px;
-  opacity: 0.9;
+  font-size: 13px;
+  opacity: 0.85;
+  margin-bottom: 6px;
+  text-align: center;
 }
 
 .alert-value {
   font-size: 28px;
-  font-weight: bold;
+  font-weight: 700;
+  margin: 6px 0;
 }
 
 .alert-severity {
-  margin-top: 5px;
   font-size: 11px;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 20px;
   background: rgba(0,0,0,0.3);
+  margin-top: 4px;
 }
 
 .hint {
   font-size: 10px;
-  margin-top: 8px;
-  opacity: 0.7;
+  opacity: 0.6;
+  margin-top: 10px;
 }
 
-/* BACK */
+/* ================= BACK ================= */
 .flash-back {
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(10px);
   transform: rotateY(180deg);
+  text-align: center;
+}
+
+.flash-back h4 {
+  margin-bottom: 6px;
 }
 
 .desc {
-  font-size: 12px;
+  font-size: 13px;
   margin: 8px 0;
+  opacity: 0.9;
+}
+
+.meta {
+  margin-top: 6px;
 }
 
 .meta p {
   font-size: 12px;
+  opacity: 0.85;
 }
 
-/* TABLE */
+/* ================= TABLE ================= */
 .alerts-table {
   width: 100%;
   border-collapse: collapse;
-  background: #f5f7fa;   /* light background */
-  color: #1a1a1a;       
+  background: #f5f7fa;
+  color: #1a1a1a;
   border-radius: 12px;
   overflow: hidden;
 }
 
-
+/* HEADER */
 .alerts-table th {
   padding: 14px;
   background: #e0e0e0;
   color: #333;
   font-weight: 600;
+  text-align: left;
 }
 
+/* CELLS */
 .alerts-table td {
   padding: 12px;
   border-bottom: 1px solid #ddd;
-  color: #222;  /* 👈 force visible text */
+  color: #222;
 }
 
+/* ROW HOVER */
 .alerts-table tr:hover {
   background: #ececec;
 }
 
-
-
-/* BADGES */
+/* ================= BADGES ================= */
 .severity {
   padding: 5px 10px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: bold;
+  text-transform: capitalize;
 }
 
 .severity.critical {
   background: red;
+  color: white;
 }
 
 .severity.high {
   background: orange;
+  color: white;
 }
 
 .severity.medium {
@@ -176,12 +247,12 @@
   color: black;
 }
 
-/* BADGE COUNT */
+/* ================= ALERT COUNT BADGE ================= */
 .alert-badge {
-  background: rgb(78, 40, 40);
+  background: #ff4d4d;
   color: white;
-  padding: 2px 6px;
+  padding: 3px 7px;
   border-radius: 50%;
-  font-size: 12px;
+  font-size: 11px;
   margin-left: 6px;
 }

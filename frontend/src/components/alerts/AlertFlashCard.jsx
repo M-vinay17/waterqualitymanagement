@@ -17,7 +17,8 @@ function AlertFlashCard({ alert }) {
           <div className="card-glow"></div>
 
           <h3>{alert.station}</h3>
-          <p className="param">{alert.parameter}</p>
+          <p className="param" style={{ textTransform: "capitalize", opacity: 0.9 }} >
+  {alert.parameter.replace("_", " ")}</p>
 
           <div className="alert-value">{alert.value}</div>
 

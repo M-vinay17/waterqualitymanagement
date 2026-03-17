@@ -2,7 +2,7 @@
 # Dataset : Agency-wise Surface Water Quality (CPCB)
 # Source  : https://data.gov.in
 # Resource: 19697d76-442e-4d76-aeae-13f8a17c91e1
-
+ 
 import httpx
 from datetime import datetime
 from app.core.config import settings

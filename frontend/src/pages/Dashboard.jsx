@@ -1,16 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import WaterMap from "../components/WaterMap";
 import "./Dashboard.css";
 import AlertBadge from "../components/alerts/AlertBadge";
 
-
-import alerts from "../utils/mockAlerts";
-const alertCount = alerts.length;
-
 export default function Dashboard() {
 
   const navigate = useNavigate();
+
+  // 🔥 STATE
+  const [alertCount, setAlertCount] = useState(0);
+
+  // 🔥 FETCH ALERTS FROM BACKEND
+  useEffect(() => {
+
+    const fetchAlerts = () => {
+      fetch("http://localhost:8000/alerts")
+        .then(res => res.json())
+        .then(data => {
+          setAlertCount(data.length);
+        })
+        .catch(err => console.error("Error fetching alerts:", err));
+    };
+
+    fetchAlerts();
+
+    // 🔁 auto refresh every 10 sec (optional but impressive)
+    const interval = setInterval(fetchAlerts, 10000);
+
+    return () => clearInterval(interval);
+
+  }, []);
 
   return (
     <div className="dashboard-container">
@@ -22,19 +42,22 @@ export default function Dashboard() {
         <ul>
           <li><Link to="/dashboard">Map</Link></li>
           <li><Link to="/reports">Reports</Link></li>
-        <li> <Link to="/alerts">
-  Alerts <AlertBadge count={alertCount}  />
-</Link> </li>
+
+          <li>
+            <Link to="/alerts">
+              Alerts <AlertBadge count={alertCount} />
+            </Link>
+          </li>
+
           <li><Link to="/stations">Stations</Link></li>
           <li><Link to="/analytics">Analytics</Link></li>
         </ul>
       </div>
 
-
       {/* Main Dashboard */}
       <div className="main-content">
 
-        {/* Profile icon */}
+        {/* Profile */}
         <div style={{display:"flex", justifyContent:"flex-end", marginBottom:"10px"}}>
           <div
             onClick={() => navigate("/profile")}
@@ -69,7 +92,7 @@ export default function Dashboard() {
 
             <div className="card">
               <h4>Active Alerts</h4>
-              <p>5</p>
+              <p>{alertCount}</p> {/* 🔥 dynamic */}
             </div>
 
             <div className="card">
