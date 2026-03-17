@@ -2,6 +2,11 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import WaterMap from "../components/WaterMap";
 import "./Dashboard.css";
+import AlertBadge from "../components/alerts/AlertBadge";
+
+
+import alerts from "../utils/mockAlerts";
+const alertCount = alerts.length;
 
 export default function Dashboard() {
 
@@ -17,7 +22,9 @@ export default function Dashboard() {
         <ul>
           <li><Link to="/dashboard">Map</Link></li>
           <li><Link to="/reports">Reports</Link></li>
-          <li><Link to="/alerts">Alerts</Link></li>
+        <li> <Link to="/alerts">
+  Alerts <AlertBadge count={alertCount}  />
+</Link> </li>
           <li><Link to="/stations">Stations</Link></li>
           <li><Link to="/analytics">Analytics</Link></li>
         </ul>

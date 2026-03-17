@@ -83,3 +83,57 @@ color:white;
 box-shadow:0 4px 10px rgba(0,0,0,0.2);
 text-align:center;
 }
+
+.alerts-page{
+padding:20px;
+}
+
+.alerts-table{
+width:100%;
+border-collapse:collapse;
+background:white;
+}
+
+.alerts-table th,
+.alerts-table td{
+padding:12px;
+border-bottom:1px solid #eee;
+}
+
+.severity{
+padding:4px 10px;
+border-radius:6px;
+color:white;
+font-size:12px;
+}
+
+.severity.high{
+background:#e74c3c;
+}
+
+.severity.medium{
+background:#f39c12;
+}
+
+.severity.critical{
+background:#8e0000;
+}
+
+.alert-card{
+padding:12px;
+border-radius:8px;
+background:#fff;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.alert-card.high{
+border-left:5px solid red;
+}
+
+.alert-card.medium{
+border-left:5px solid orange;
+}
+
+.alert-card.critical{
+border-left:5px solid darkred;
+}
