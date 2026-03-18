@@ -2,7 +2,7 @@
 # Dataset : Agency-wise Surface Water Quality (CPCB)
 # Source  : https://data.gov.in
 # Resource: 19697d76-442e-4d76-aeae-13f8a17c91e1
- 
+
 import httpx
 from datetime import datetime
 from app.core.config import settings
@@ -16,10 +16,38 @@ PARAM_UNITS = {
     "bod":            "mg/l",
     "conductivity":   "µS/cm",
     "nitrate":        "mg/l",
+    "nitrite":        "mg/l",
     "total_coliform": "MPN/100ml",
+    "fecal_coliform": "MPN/100ml",
     "turbidity":      "NTU",
     "arsenic":        "mg/l",
     "fluoride":       "mg/l",
+    "temperature":    "°C",
+    "tds":            "mg/l",
+    "cod":            "mg/l",
+    "ammonia":        "mg/l",
+    "phosphate":      "mg/l",
+    "hardness":       "mg/l",
+    "alkalinity":     "mg/l",
+    "chloride":       "mg/l",
+    "sulphate":       "mg/l",
+    "iron":           "mg/l",
+    "manganese":      "mg/l",
+    "zinc":           "mg/l",
+    "copper":         "mg/l",
+    "lead":           "mg/l",
+    "chromium":       "mg/l",
+    "cadmium":        "mg/l",
+    "mercury":        "mg/l",
+    "nickel":         "mg/l",
+    "calcium":        "mg/l",
+    "magnesium":      "mg/l",
+    "sodium":         "mg/l",
+    "potassium":      "mg/l",
+    "silica":         "mg/l",
+    "toc":            "mg/l",
+    "do_saturation":  "%",
+    "secchi_depth":   "cm",
 }
 
 
@@ -31,12 +59,7 @@ async def get_india_stations(
     state: str = "Andhra Pradesh",
     limit: int = 100
 ) -> list[dict]:
-    """
-    Returns unique station list filtered by state.
-    Default: Andhra Pradesh
-    """
     raw = await _fetch_raw(state=state, limit=limit)
-
     if not raw:
         return []
 
@@ -44,9 +67,7 @@ async def get_india_stations(
     stations = []
 
     for record in raw.get("records", []):
-
         name = _station_name(record)
-
         if name in seen:
             continue
         seen.add(name)
@@ -54,15 +75,14 @@ async def get_india_stations(
         stations.append({
             "name":            name,
             "location":        _location(record, state),
-            "latitude":        _float(record.get("Latitude") or record.get("Lat")) or 0.0,
-            "longitude":       _float(record.get("Longitude") or record.get("Long")) or 0.0,
-            "managed_by":      record.get("Agency") or "CPCB India",
+            "latitude":        _float(record.get("Latitude")) or 0.0,
+            "longitude":       _float(record.get("Longitude")) or 0.0,
+            "managed_by":      record.get("Agency_name") or "CPCB India",
             "external_id":     _make_ext_id(name, state),
             "external_source": "india_gov",
-            # extra info
             "state":           record.get("State")    or state,
             "district":        record.get("District") or "",
-            "river":           record.get("River")    or record.get("Water_Body"),
+            "river":           record.get("Basin")    or record.get("Sub_Basin") or "",
         })
 
     return stations
@@ -76,73 +96,163 @@ async def get_india_readings(
     state: str = "Andhra Pradesh",
     limit: int = 100
 ) -> list[dict]:
-    """
-    Returns readings filtered by state.
-    Default: Andhra Pradesh
-    """
     raw = await _fetch_raw(state=state, limit=limit)
-
     if not raw:
         return []
 
     readings = []
 
     for record in raw.get("records", []):
-
         name = _station_name(record)
 
         parameters = {
             "ph": {
-                "value": _float(record.get("pH") or record.get("ph")),
-                "unit":  PARAM_UNITS["ph"],
+                "value": _float(record.get("ph_fld") or record.get("ph_gen") or record.get("ph")),
+                "unit": PARAM_UNITS["ph"],
             },
             "do": {
-                "value": _float(
-                    record.get("D.O._(mg/l)") or
-                    record.get("D.O") or
-                    record.get("DO") or
-                    record.get("Dissolved_Oxygen")
-                ),
+                "value": _float(record.get("_do") or record.get("d_o") or record.get("d_o_")),
                 "unit": PARAM_UNITS["do"],
             },
             "bod": {
-                "value": _float(
-                    record.get("B.O.D_(mg/l)") or
-                    record.get("BOD") or
-                    record.get("Biochemical_Oxygen_Demand")
-                ),
+                "value": _float(record.get("bod3_27") or record.get("bod")),
                 "unit": PARAM_UNITS["bod"],
             },
             "total_coliform": {
-                "value": _float(
-                    record.get("Total_Coliform_(MPN/100ml)") or
-                    record.get("Total_Coliform") or
-                    record.get("Coliform")
-                ),
+                "value": _float(record.get("tcol_mpn")),
                 "unit": PARAM_UNITS["total_coliform"],
             },
+            "fecal_coliform": {
+                "value": _float(record.get("fcol_mpn")),
+                "unit": PARAM_UNITS["fecal_coliform"],
+            },
             "conductivity": {
-                "value": _float(
-                    record.get("Conductivity") or
-                    record.get("Specific_Conductance")
-                ),
+                "value": _float(record.get("ec_fld") or record.get("ec_gen")),
                 "unit": PARAM_UNITS["conductivity"],
             },
             "nitrate": {
-                "value": _float(record.get("Nitrate") or record.get("NO3")),
-                "unit":  PARAM_UNITS["nitrate"],
+                "value": _float(record.get("no3_n") or record.get("no2_no3")),
+                "unit": PARAM_UNITS["nitrate"],
+            },
+            "nitrite": {
+                "value": _float(record.get("no2_n") or record.get("no2__n")),
+                "unit": PARAM_UNITS["nitrite"],
             },
             "turbidity": {
-                "value": _float(record.get("Turbidity")),
-                "unit":  PARAM_UNITS["turbidity"],
+                "value": _float(record.get("turb")),
+                "unit": PARAM_UNITS["turbidity"],
             },
             "arsenic": {
-                "value": _float(record.get("Arsenic") or record.get("As")),
-                "unit":  PARAM_UNITS["arsenic"],
+                "value": _float(record.get("_as")),
+                "unit": PARAM_UNITS["arsenic"],
             },
             "fluoride": {
-                "value": _float(record.get("Fluoride") or record.get("F")),
-                "unit":  PARAM_UNITS["fluoride"],
+                "value": _float(record.get("f")),
+                "unit": PARAM_UNITS["fluoride"],
+            },
+            "temperature": {
+                "value": _float(record.get("temp")),
+                "unit": PARAM_UNITS["temperature"],
+            },
+            "tds": {
+                "value": _float(record.get("tds")),
+                "unit": PARAM_UNITS["tds"],
+            },
+            "cod": {
+                "value": _float(record.get("cod")),
+                "unit": PARAM_UNITS["cod"],
+            },
+            "ammonia": {
+                "value": _float(record.get("nh3_n")),
+                "unit": PARAM_UNITS["ammonia"],
+            },
+            "phosphate": {
+                "value": _float(record.get("o_po4_p")),
+                "unit": PARAM_UNITS["phosphate"],
+            },
+            "hardness": {
+                "value": _float(record.get("har_total")),
+                "unit": PARAM_UNITS["hardness"],
+            },
+            "alkalinity": {
+                "value": _float(record.get("alk_tot")),
+                "unit": PARAM_UNITS["alkalinity"],
+            },
+            "chloride": {
+                "value": _float(record.get("cl")),
+                "unit": PARAM_UNITS["chloride"],
+            },
+            "sulphate": {
+                "value": _float(record.get("so4")),
+                "unit": PARAM_UNITS["sulphate"],
+            },
+            "iron": {
+                "value": _float(record.get("fe")),
+                "unit": PARAM_UNITS["iron"],
+            },
+            "manganese": {
+                "value": _float(record.get("mn")),
+                "unit": PARAM_UNITS["manganese"],
+            },
+            "zinc": {
+                "value": _float(record.get("zn")),
+                "unit": PARAM_UNITS["zinc"],
+            },
+            "copper": {
+                "value": _float(record.get("cu")),
+                "unit": PARAM_UNITS["copper"],
+            },
+            "lead": {
+                "value": _float(record.get("pb")),
+                "unit": PARAM_UNITS["lead"],
+            },
+            "chromium": {
+                "value": _float(record.get("cr")),
+                "unit": PARAM_UNITS["chromium"],
+            },
+            "cadmium": {
+                "value": _float(record.get("cd")),
+                "unit": PARAM_UNITS["cadmium"],
+            },
+            "mercury": {
+                "value": _float(record.get("hg")),
+                "unit": PARAM_UNITS["mercury"],
+            },
+            "nickel": {
+                "value": _float(record.get("ni")),
+                "unit": PARAM_UNITS["nickel"],
+            },
+            "calcium": {
+                "value": _float(record.get("ca")),
+                "unit": PARAM_UNITS["calcium"],
+            },
+            "magnesium": {
+                "value": _float(record.get("mg")),
+                "unit": PARAM_UNITS["magnesium"],
+            },
+            "sodium": {
+                "value": _float(record.get("na")),
+                "unit": PARAM_UNITS["sodium"],
+            },
+            "potassium": {
+                "value": _float(record.get("k")),
+                "unit": PARAM_UNITS["potassium"],
+            },
+            "silica": {
+                "value": _float(record.get("sio2")),
+                "unit": PARAM_UNITS["silica"],
+            },
+            "toc": {
+                "value": _float(record.get("toc")),
+                "unit": PARAM_UNITS["toc"],
+            },
+            "do_saturation": {
+                "value": _float(record.get("do_sat_")),
+                "unit": PARAM_UNITS["do_saturation"],
+            },
+            "secchi_depth": {
+                "value": _float(record.get("secchi")),
+                "unit": PARAM_UNITS["secchi_depth"],
             },
         }
 
@@ -153,18 +263,16 @@ async def get_india_readings(
             recorded_at = datetime.utcnow()
 
         readings.append({
-            # station info
             "name":            name,
             "location":        _location(record, state),
-            "latitude":        _float(record.get("Latitude")  or record.get("Lat"))  or 0.0,
-            "longitude":       _float(record.get("Longitude") or record.get("Long")) or 0.0,
-            "managed_by":      record.get("Agency") or "CPCB India",
+            "latitude":        _float(record.get("Latitude"))  or 0.0,
+            "longitude":       _float(record.get("Longitude")) or 0.0,
+            "managed_by":      record.get("Agency_name") or "CPCB India",
             "external_id":     _make_ext_id(name, state),
             "external_source": "india_gov",
             "state":           record.get("State")    or state,
             "district":        record.get("District") or "",
-            "river":           record.get("River")    or record.get("Water_Body"),
-            # reading info
+            "river":           record.get("Basin")    or record.get("Sub_Basin") or "",
             "recorded_at":     recorded_at,
             "parameters":      parameters,
         })
@@ -177,7 +285,6 @@ async def get_india_readings(
 # =========================================================
 
 async def check_india_gov_status() -> dict:
-    """Ping data.gov.in to check if API is online."""
     url    = f"{BASE_URL}/{RESOURCE_ID}"
     params = {
         "api-key": settings.INDIA_GOV_API_KEY,
@@ -205,9 +312,6 @@ async def _fetch_raw(
     limit: int  = 100,
     offset: int = 0,
 ) -> dict | None:
-    """
-    Calls data.gov.in API with state filter only.
-    """
     url    = f"{BASE_URL}/{RESOURCE_ID}"
     params = {
         "api-key":        settings.INDIA_GOV_API_KEY,
@@ -216,7 +320,6 @@ async def _fetch_raw(
         "limit":          limit,
         "filters[State]": state,
     }
-
     async with httpx.AsyncClient(timeout=30) as client:
         try:
             r = await client.get(url, params=params)
@@ -240,9 +343,9 @@ def _station_name(record: dict) -> str:
 
 
 def _location(record: dict, state: str) -> str:
-    river    = record.get("River") or record.get("Water_Body") or ""
+    basin    = record.get("Basin")    or ""
     district = record.get("District") or ""
-    return f"{river} - {district} - {state}".strip(" -") or state
+    return f"{basin} - {district} - {state}".strip(" -") or state
 
 
 def _make_ext_id(name: str, state: str) -> str:
@@ -251,7 +354,7 @@ def _make_ext_id(name: str, state: str) -> str:
 
 def _float(value) -> float | None:
     try:
-        if value in (None, "", "NA", "N/A", "-", "--", "NaN"):
+        if value in (None, "", "NA", "N/A", "-", "--", "NaN", "na", "n/a"):
             return None
         return float(str(value).strip())
     except (ValueError, TypeError):

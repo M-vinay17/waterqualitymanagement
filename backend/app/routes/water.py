@@ -324,3 +324,19 @@ async def check_india_api_status():
         "checked_at": datetime.utcnow().isoformat(),
         "api": status
     }
+
+    # =========================================================
+# DEBUG — RAW FIELD NAMES
+# =========================================================
+
+@router.get("/india/debug")
+async def debug_raw_fields(state: str = "Andhra Pradesh"):
+    """Returns first raw record to see actual API field names"""
+    from app.services.india_gov_service import _fetch_raw
+    raw = await _fetch_raw(state=state, limit=1)
+    if not raw or not raw.get("records"):
+        return {"error": "no records", "raw": raw}
+    return {
+        "field_names": list(raw["records"][0].keys()),
+        "sample_record": raw["records"][0]
+    }
