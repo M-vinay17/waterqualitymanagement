@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import axiosInstance from "../services/api"; // your JWT axios instance
 
 // ─── Fix Leaflet default icon ─────────────────────────────────────────────────
 delete L.Icon.Default.prototype._getIconUrl;
@@ -20,6 +19,17 @@ const STATUS = {
   poor:     { color: "#ff4757", bg: "rgba(255,71,87,0.1)",  label: "POOR"     },
   unknown:  { color: "#667788", bg: "rgba(100,120,140,0.1)",label: "UNKNOWN"  },
 };
+
+// ─── All 28 Indian States ─────────────────────────────────────────────────────
+const INDIAN_STATES = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
+  "Chhattisgarh", "Goa", "Gujarat", "Haryana",
+  "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala",
+  "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
+  "Mizoram", "Nagaland", "Odisha", "Punjab",
+  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana",
+  "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+];
 
 // ─── Derive status from parameters ───────────────────────────────────────────
 function deriveStatus(params = {}) {
@@ -86,7 +96,7 @@ function DetailPanel({ station, onClose }) {
 
   return (
     <motion.div
-      key={station.id}
+      key={station.external_id || station.name}
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 30 }}
@@ -140,9 +150,11 @@ function DetailPanel({ station, onClose }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
           {[
             ["MANAGED BY", station.managed_by || "CPCB India"],
+            ["DISTRICT",   station.district   || "—"],
             ["RIVER",      station.river       || "—"],
-            ["LAT",        station.latitude     ? `${station.latitude}° N` : "—"],
-            ["LNG",        station.longitude    ? `${station.longitude}° E` : "—"],
+            ["RECORDED",   station.recorded_at ? station.recorded_at.slice(0, 10) : "—"],
+            ["LAT",        station.latitude    ? `${Number(station.latitude).toFixed(4)}° N` : "—"],
+            ["LNG",        station.longitude   ? `${Number(station.longitude).toFixed(4)}° E` : "—"],
           ].map(([label, val]) => (
             <div key={label}>
               <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "8px", color: "#334455", marginBottom: "2px" }}>{label}</div>
@@ -181,45 +193,51 @@ function DetailPanel({ station, onClose }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function WaterStation() {
-  const [stations,  setStations]  = useState([]);
-  const [selected,  setSelected]  = useState(null);
-  const [search,    setSearch]    = useState("");
-  const [filter,    setFilter]    = useState("all");
-  const [loading,   setLoading]   = useState(true);
-  const [error,     setError]     = useState(null);
-  const [state,     setState]     = useState("Andhra Pradesh");
+  const [stations, setStations] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [search,   setSearch]   = useState("");
+  const [filter,   setFilter]   = useState("all");
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState(null);
+  const [state,    setState]    = useState("Andhra Pradesh");
 
-  // ── Fetch from your router ──────────────────────────────────────────────────
+  // ── Fetch readings from API ─────────────────────────────────────────────────
   useEffect(() => {
-    const fetchStations = async () => {
+    const fetchReadings = async () => {
       setLoading(true);
       setError(null);
+      setStations([]);
       try {
-        const res = await axiosInstance.get(`/water-stations?state=${encodeURIComponent(state)}`);
-        setStations(res.data);
+        const url = `http://127.0.0.1:8000/water/india/readings?state=${encodeURIComponent(state)}&limit=100`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setStations(data.readings || []);
       } catch (err) {
-        setError("Failed to load stations. Check your API connection.");
+        setError("Failed to load readings. Is the backend running?");
         console.error("[WaterStation] fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchStations();
+    fetchReadings();
   }, [state]);
 
   // ── Filter + search ─────────────────────────────────────────────────────────
   const filtered = stations.filter(s => {
     const status = deriveStatus(s.parameters);
-    const matchSearch = (s.name || "").toLowerCase().includes(search.toLowerCase()) ||
-                        (s.river || "").toLowerCase().includes(search.toLowerCase()) ||
-                        (s.external_id || "").toLowerCase().includes(search.toLowerCase());
+    const matchSearch =
+      (s.name        || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.district    || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.river       || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.external_id || "").toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" || status === filter;
     return matchSearch && matchFilter;
   });
 
   const mapCenter = selected?.latitude
     ? [selected.latitude, selected.longitude]
-    : [15.9129, 79.7400]; // Andhra Pradesh center
+    : [20.5937, 78.9629]; // India center
 
   return (
     <div style={{
@@ -260,7 +278,7 @@ export default function WaterStation() {
             </div>
           </div>
 
-          {/* State selector */}
+          {/* State selector — all 28 Indian states */}
           <select
             value={state}
             onChange={e => { setState(e.target.value); setSelected(null); }}
@@ -270,7 +288,7 @@ export default function WaterStation() {
               fontFamily: "'Share Tech Mono', monospace", fontSize: "11px", cursor: "pointer",
             }}
           >
-            {["Andhra Pradesh","Telangana","Karnataka","Tamil Nadu","Maharashtra","Kerala","Gujarat","Rajasthan"].map(s => (
+            {INDIAN_STATES.map(s => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
@@ -293,7 +311,7 @@ export default function WaterStation() {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search name, river, ID…"
+              placeholder="Search name, district, ID…"
               style={{
                 width: "100%", boxSizing: "border-box",
                 padding: "7px 10px", borderRadius: "4px",
@@ -304,7 +322,7 @@ export default function WaterStation() {
               }}
             />
             <div style={{ display: "flex", gap: "5px" }}>
-              {["all","good","moderate","poor"].map(f => {
+              {["all", "good", "moderate", "poor"].map(f => {
                 const col = f === "all" ? "#00b4ff" : STATUS[f]?.color;
                 const active = filter === f;
                 return (
@@ -324,7 +342,7 @@ export default function WaterStation() {
 
           {/* Count */}
           <div style={{ padding: "6px 12px", fontFamily: "'Share Tech Mono', monospace", fontSize: "9px", color: "#334455", letterSpacing: "0.08em" }}>
-            {loading ? "LOADING…" : `${filtered.length} STATION${filtered.length !== 1 ? "S" : ""}`}
+            {loading ? "LOADING…" : `${filtered.length} READING${filtered.length !== 1 ? "S" : ""}`}
           </div>
 
           {/* List */}
@@ -342,13 +360,13 @@ export default function WaterStation() {
             {!loading && !error && filtered.map((s, i) => {
               const status = deriveStatus(s.parameters);
               const st = STATUS[status];
-              const isSelected = selected?.id === s.id;
+              const isSelected = selected?.external_id === s.external_id;
               return (
                 <motion.div
-                  key={s.id || i}
+                  key={s.external_id || i}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
+                  transition={{ delay: i * 0.02 }}
                   onClick={() => setSelected(isSelected ? null : s)}
                   whileHover={{ x: 3 }}
                   style={{
@@ -370,9 +388,9 @@ export default function WaterStation() {
                       <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "13px", fontWeight: 600, color: "#d0e4f7", lineHeight: 1.2 }}>
                         {s.name || "Unnamed Station"}
                       </div>
-                      {s.river && (
+                      {s.district && (
                         <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "9px", color: "#445566", marginTop: "2px" }}>
-                          {s.river}
+                          {s.district}
                         </div>
                       )}
                     </div>
@@ -392,7 +410,7 @@ export default function WaterStation() {
             })}
             {!loading && !error && filtered.length === 0 && (
               <div style={{ textAlign: "center", padding: "40px 0", color: "#334455", fontFamily: "'Share Tech Mono', monospace", fontSize: "10px" }}>
-                NO STATIONS MATCH
+                NO READINGS FOUND
               </div>
             )}
           </div>
@@ -402,7 +420,7 @@ export default function WaterStation() {
         <div style={{ flex: 1, position: "relative" }}>
           <MapContainer
             center={mapCenter}
-            zoom={7}
+            zoom={6}
             style={{ width: "100%", height: "100%" }}
             zoomControl={false}
           >
@@ -416,7 +434,7 @@ export default function WaterStation() {
               const status = deriveStatus(s.parameters);
               return (
                 <Marker
-                  key={s.id || i}
+                  key={s.external_id || i}
                   position={[s.latitude, s.longitude]}
                   icon={makeIcon(status)}
                   eventHandlers={{ click: () => setSelected(s) }}
@@ -426,7 +444,7 @@ export default function WaterStation() {
                       <strong style={{ color: "#e8f4ff", fontFamily: "'Barlow Condensed', sans-serif", fontSize: "13px" }}>
                         {s.name || "Station"}
                       </strong><br />
-                      {s.river && <>{s.river}<br /></>}
+                      {s.district && <>{s.district}<br /></>}
                       <span style={{ color: STATUS[status].color }}>{STATUS[status].label}</span>
                     </div>
                   </Popup>
@@ -439,7 +457,7 @@ export default function WaterStation() {
           <AnimatePresence>
             {selected && (
               <DetailPanel
-                key={selected.id}
+                key={selected.external_id || selected.name}
                 station={selected}
                 onClose={() => setSelected(null)}
               />
