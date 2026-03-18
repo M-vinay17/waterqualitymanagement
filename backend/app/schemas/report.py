@@ -1,18 +1,16 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 
 class ReportCreate(BaseModel):
-
-    user_id: int
-    photo_url: str
+    photo_url: Optional[str] = None   # set by backend after upload
     location: str
     description: str
     water_source: str
 
 
 class ReportUpdate(BaseModel):
-
     location: str
     description: str
     water_source: str
@@ -20,10 +18,9 @@ class ReportUpdate(BaseModel):
 
 
 class ReportResponse(BaseModel):
-
     id: int
     user_id: int
-    photo_url: str
+    photo_url: Optional[str] = None
     location: str
     description: str
     water_source: str

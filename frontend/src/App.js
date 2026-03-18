@@ -7,6 +7,10 @@ import Profile from "./pages/Profile";
 import Alerts from "./pages/Alerts"
 
 import UserReports from "./pages/UserReports";
+import WaterStation from "./pages/stationmap";
+
+// Routes లో:
+
 
 function App() {
   return (
@@ -21,7 +25,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/reports" element={<UserReports />} />
         <Route path="/alerts" element={<Alerts/>}/>
-
+        <Route path="/water-stations" element={<WaterStation />} />
         <Route path="/profile" element={<Profile />} />
 
       </Routes>
