@@ -31,16 +31,19 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=TokenResponse)
 def login(user: UserLogin, db: Session = Depends(get_db)):
 
+    # Step 1 — check if email exists
     db_user = db.query(User).filter(User.email == user.email).first()
+    if not db_user:
+        raise HTTPException(status_code=401, detail="Invalid credentials. Email or password is incorrect.")
 
-    if not db_user or not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    # Step 2 — email found, now verify password
+    if not verify_password(user.password, db_user.password):
+        raise HTTPException(status_code=401, detail="Wrong password. Please try again.")
 
+    # Step 3 — both correct, issue token
     token = create_access_token({"sub": db_user.email, "role": db_user.role})
 
     return {
         "access_token": token,
         "token_type": "bearer"
     }
-
-
