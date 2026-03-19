@@ -4,9 +4,10 @@ export default function Sidebar() {
   return (
     <div style={styles.sidebar}>
       <h2 style={styles.logo}>WaterWatch</h2>
-
+      <li onClick={() => navigate("/add-alert")}>Add Alert</li>
       <Link style={styles.link} to="/dashboard">Dashboard</Link>
       <Link style={styles.link} to="/reports">Reports</Link>
+      <Link style={styles.link} to="/alerts/history">Historical Charts</Link>
       <Link style={styles.link} to="/profile">Profile</Link>
     </div>
   );

@@ -11,6 +11,10 @@ width:220px;
 background:#0f1f38;
 color:white;
 padding:20px;
+height:100vh;
+position:fixed;
+left:0;
+top:0;
 }
 
 .logo{
@@ -23,7 +27,7 @@ padding:0;
 }
 
 .sidebar li{
-margin:15px 0;
+margin-bottom:15px;
 }
 
 .sidebar a{
@@ -31,13 +35,32 @@ color:white;
 text-decoration:none;
 }
 
-/* Main */
+/* Main Content */
 
 .main-content{
+margin-left:220px;
 flex:1;
 background:#f5f7fb;
 padding:30px;
 }
+
+/* Top Bar */
+
+.top-bar{
+display:flex;
+justify-content:flex-end;
+margin-bottom:20px;
+}
+
+.profile-icon{
+width:40px;
+height:40px;
+background:#1c2b45;
+border-radius:50%;
+cursor:pointer;
+}
+
+/* Dashboard Grid */
 
 .dashboard-grid{
 display:grid;
@@ -55,7 +78,7 @@ padding:10px;
 height:450px;
 }
 
-/* Right Cards */
+/* Cards */
 
 .right-cards{
 display:flex;

@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import WaterMap from "../components/WaterMap";
@@ -144,6 +145,14 @@ function WaterStationCard({ navigate }) {
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function Dashboard() {
+=======
+import React from "react";
+import "./Dashboard.css";
+import { Link, useNavigate } from "react-router-dom";
+import WaterMap from "../components/WaterMap";
+
+function Dashboard() {
+>>>>>>> Stashed changes
 
   const navigate = useNavigate();
   const [alertCount,  setAlertCount]  = useState(0);
@@ -167,6 +176,7 @@ export default function Dashboard() {
 
       {/* Sidebar */}
       <div className="sidebar">
+
         <h2 className="logo">WaterWatch</h2>
         <ul>
           <li><Link to="/dashboard">Map</Link></li>
@@ -178,9 +188,12 @@ export default function Dashboard() {
           </li>
           <li><Link to="/water-stations">Water Stations</Link></li>
           <li><Link to="/analytics">Analytics</Link></li>
+          <li><Link to="/alerts/history">Historical Charts</Link></li>
         </ul>
+
       </div>
 
+<<<<<<< Updated upstream
       {/* Main Dashboard */}
       <div className="main-content">
 
@@ -197,9 +210,24 @@ export default function Dashboard() {
           >
             👤
           </div>
+=======
+
+      {/* Main Content */}
+      <div className="main-content">
+
+        {/* Top Bar */}
+        <div className="top-bar">
+
+          <div
+            className="profile-icon"
+            onClick={() => navigate("/profile")}
+          ></div>
+
+>>>>>>> Stashed changes
         </div>
 
-        <h2>Dashboard Overview</h2>
+
+        <h3>Dashboard Overview</h3>
 
         <div className="dashboard-grid">
 
@@ -207,6 +235,11 @@ export default function Dashboard() {
             <WaterMap />
           </div>
 
+<<<<<<< Updated upstream
+=======
+
+          {/* Right Cards */}
+>>>>>>> Stashed changes
           <div className="right-cards">
 
             <div className="card">
@@ -226,7 +259,11 @@ export default function Dashboard() {
 
             <div className="card">
               <h4>Water Quality</h4>
+<<<<<<< Updated upstream
               <p style={{ color: "green" }}>Good (7.8)</p>
+=======
+              <p className="good">Good (7.8)</p>
+>>>>>>> Stashed changes
             </div>
 
             <WaterStationCard navigate={navigate} />
@@ -250,3 +287,5 @@ export default function Dashboard() {
     </div>
   );
 }
+
+export default Dashboard;

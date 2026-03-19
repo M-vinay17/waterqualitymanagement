@@ -1,3 +1,4 @@
+import AlertDetails from "./pages/AlertDetails";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login";
@@ -11,11 +12,11 @@ import WaterStation from "./pages/stationmap";
 
 // Routes లో:
 
+import HistoricalCharts from "./pages/HistoricalCharts";
 
 function App() {
   return (
     <Router>
-
       <Routes>
 
         <Route path="/" element={<Login />} />
@@ -26,10 +27,15 @@ function App() {
         <Route path="/reports" element={<UserReports />} />
         <Route path="/alerts" element={<Alerts/>}/>
         <Route path="/water-stations" element={<WaterStation />} />
+        <Route path="/alerts/:id" element={<AlertDetails />} />
+
         <Route path="/profile" element={<Profile />} />
 
-      </Routes>
+        <Route path="/reports" element={<UserReports />} />
 
+        <Route path="/alerts/history" element={<HistoricalCharts />} />
+
+      </Routes>
     </Router>
   );
 }
