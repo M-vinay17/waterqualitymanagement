@@ -12,3 +12,4 @@ function AlertFlashGrid({ alerts }) {
 }
 
 export default AlertFlashGrid;
+ 
