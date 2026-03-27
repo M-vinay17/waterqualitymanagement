@@ -4,7 +4,10 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 # Routers
-from app.routes import user, auth, water, search, water_station, report, alert
+from app.routes import user, auth, water, search, water_station, report, alert, websocket
+
+#services
+from app.services.ws_manager import ws_manager
 
 # Database
 from app.core.database import engine, Base
@@ -49,7 +52,7 @@ app.include_router(search.router, tags=["Search"])
 app.include_router(water_station.router, tags=["Water Stations"])
 app.include_router(report.router, tags=["Reports"])
 app.include_router(alert.router, prefix="/alerts", tags=["Alerts"])  # ✅ now works
-
+app.include_router(websocket.router, tags=["WebSocket"])    
 # Root Endpoint
 @app.get("/")
 def home():

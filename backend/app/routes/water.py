@@ -3,6 +3,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from typing import List
 from datetime import datetime
+from app.services.ws_manager import ws_manager
+from app.services.predictive_engine import analyse_station
+
+
+
 
 from app.core.database import get_db
 from app.core.security import get_current_user
@@ -93,8 +98,9 @@ def create_station(
 # ---------------------------------------------------------
 
 @router.post("/readings", response_model=StationReadingOut, status_code=201)
-def create_reading(
+async def create_reading(                         # ← def → async def
     reading: StationReadingCreate,
+    background_tasks: BackgroundTasks,            # ← new parameter
     db: Session = Depends(get_db)
 ):
     station = db.query(WaterStation).filter(
@@ -108,6 +114,14 @@ def create_reading(
     db.add(db_reading)
     db.commit()
     db.refresh(db_reading)
+
+    # ← ఇది మాత్రమే new — POST response block చేయదు
+    background_tasks.add_task(
+        run_engine_and_broadcast,
+        reading.station_id,
+        db
+    )
+
     return db_reading
 
 
