@@ -4,7 +4,8 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 # Routers
-from app.routes import user, auth, water, search, water_station, report, alert, websocket
+# Routers — add this import at the top with the others
+from app.routes import user, auth, water, search, water_station, report, alert, websocket, predictive_alerts
 
 #services
 from app.services.ws_manager import ws_manager
@@ -53,6 +54,7 @@ app.include_router(water_station.router, tags=["Water Stations"])
 app.include_router(report.router, tags=["Reports"])
 app.include_router(alert.router, prefix="/alerts", tags=["Alerts"])  # ✅ now works
 app.include_router(websocket.router, tags=["WebSocket"])    
+app.include_router(predictive_alerts.router, prefix="/api/v1", tags=["Predictive Alerts"])
 # Root Endpoint
 @app.get("/")
 def home():

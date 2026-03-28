@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from typing import List
@@ -115,7 +115,7 @@ async def create_reading(                         # ← def → async def
     db.commit()
     db.refresh(db_reading)
 
-    # ← ఇది మాత్రమే new — POST response block చేయదు
+   
     background_tasks.add_task(
         run_engine_and_broadcast,
         reading.station_id,

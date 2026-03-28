@@ -33,5 +33,5 @@ class Alert(Base):
                     default=AlertSource.manual,
                     server_default="manual"   # safe for existing rows
                  )
-    station_id = Column(Integer, ForeignKey("stations.id"), nullable=True)
+    station_id = Column(Integer, ForeignKey("water_stations.id"), nullable=True)
     parameter  = Column(String, nullable=True)   # e.g. "ph", "turbidity"
