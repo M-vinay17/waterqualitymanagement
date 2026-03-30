@@ -1,14 +1,25 @@
 import { Link } from "react-router-dom";
 
 export default function Sidebar() {
+
+  const role = localStorage.getItem("user_role");
+
   return (
     <div style={styles.sidebar}>
       <h2 style={styles.logo}>WaterWatch</h2>
-      <li onClick={() => navigate("/add-alert")}>Add Alert</li>
-      <Link style={styles.link} to="/dashboard">Dashboard</Link>
+
+      <Link style={styles.link} to="/dashboard">Map Overview</Link>
       <Link style={styles.link} to="/reports">Reports</Link>
+      <Link style={styles.link} to="/alerts">Alerts</Link>
+      <Link style={styles.link} to="/water-stations">Water Stations</Link>
       <Link style={styles.link} to="/alerts/history">Historical Charts</Link>
+
+      {role === "ngo" && (
+        <Link style={styles.link} to="/ngo/dashboard">NGO Portal</Link>
+      )}
+
       <Link style={styles.link} to="/profile">Profile</Link>
+
     </div>
   );
 }

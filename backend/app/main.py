@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 # Routers
-from app.routes import user, auth, water, search, water_station, report, alert
+from app.routes import user, auth, water, search, water_station, report, alert, collaboration, ngo_stations
 
 # Database
 from app.core.database import engine, Base
@@ -18,7 +18,8 @@ from app.models import search as search_model
 from app.models import report as report_model
 from app.models import alert as alert_model   # ✅ FIXED (renamed)
 
-# FastAPI App
+from app.models import collaboration as collaboration_model# FastAPI App
+from app.models import ngo_station as ngo_station
 app = FastAPI(
     title="AquaWatch API",
     description="Water Quality Monitoring System Backend API",
@@ -49,9 +50,10 @@ app.include_router(search.router, tags=["Search"])
 app.include_router(water_station.router, tags=["Water Stations"])
 app.include_router(report.router, tags=["Reports"])
 app.include_router(alert.router, prefix="/alerts", tags=["Alerts"])  # ✅ now works
+app.include_router(collaboration.router, tags=["Collaborations"])
+app.include_router(ngo_stations.router) 
 
-# Root Endpoint
-@app.get("/")
+
 def home():
     return {"message": "Backend is running successfully!"}
 
@@ -59,3 +61,4 @@ def home():
 @app.get("/health")
 def health():
     return {"status": "healthy"}
+ 

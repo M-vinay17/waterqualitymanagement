@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import WaterMap from "../components/WaterMap";
 import AlertBadge from "../components/alerts/AlertBadge";
 import Profile from "./Profile";
+ 
 
 // ─── Status helpers ───────────────────────────────────────────────────────────
 function deriveStatus(params = {}) {
@@ -268,7 +269,6 @@ export default function Dashboard() {
     fetch("http://localhost:8000/reports")
       .then(r => r.json())
       .then(data => {
-        // handles both array response and {total: N} response
         setReportCount(Array.isArray(data) ? data.length : (data.total ?? data.count ?? 0));
       })
       .catch(() => setReportCount(0))
@@ -292,13 +292,41 @@ export default function Dashboard() {
   }, []);
 
   // ── Sidebar nav ────────────────────────────────────────────────────────────
-  const navItems = [
-    { to: "/dashboard",      icon: "🗺️",  label: "Map Overview"      },
-    { to: "/reports",        icon: "📋",  label: "Reports"           },
-    { to: "/alerts",         icon: "🔔",  label: "Alerts", badge: alertCount },
-    { to: "/water-stations", icon: "💧",  label: "Water Stations"    },
-    { to: "/alerts/history", icon: "📊",  label: "Historical Charts" },
-  ];
+  // ✅ FIXED: safe JSON parse — won't crash when no user is logged in
+  // ── Sidebar nav ────────────────────────────────────────────
+
+// safely get logged in user
+let user = null;
+try {
+  user = JSON.parse(localStorage.getItem("user"));
+} catch (e) {
+  user = null;
+}
+
+const role = user?.role;
+
+const navItems = [
+  { to: "/dashboard", icon: "🗺️", label: "Map Overview" },
+  { to: "/reports", icon: "📋", label: "Reports" },
+  { to: "/alerts", icon: "🔔", label: "Alerts", badge: alertCount },
+  { to: "/water-stations", icon: "💧", label: "Water Stations" },
+  { to: "/alerts/history", icon: "📊", label: "Historical Charts" },
+  {
+    to: "/NgoDashboard",
+    icon: "🤝",
+    label: "NGO Portal"
+  }
+];
+
+// ✅ Add NGO Portal only for NGO/Admin
+// if (role === "ngo" || role === "admin") {
+//   navItems.push({
+//     to: "/NgoDashboard",
+//     icon: "🤝",
+//     label: "NGO Portal"
+//   });
+// }
+  
 
   // ── Water quality display values ───────────────────────────────────────────
   const wqStatus = waterQuality?.status || waterQuality?.quality || null;
@@ -401,7 +429,7 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Profile pill — top right */}
+              {/* Profile pill */}
               <div
                 onClick={() => setProfileOpen(true)}
                 style={{
@@ -432,10 +460,9 @@ export default function Dashboard() {
           {/* Content */}
           <div style={{ flex: 1, overflowY: "auto", padding: "22px 26px" }}>
 
-            {/* ── 4 Stat cards — all live from backend ── */}
+            {/* ── 4 Stat cards ── */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginBottom: "20px" }}>
 
-              {/* 1. Active Alerts — GET /alerts */}
               <StatCard
                 index={0} icon="🔔" title="Active Alerts"
                 value={alertCount}
@@ -444,7 +471,6 @@ export default function Dashboard() {
                 onClick={() => navigate("/alerts")}
               />
 
-              {/* 2. Reports — GET /reports */}
               <StatCard
                 index={1} icon="📋" title="Reports"
                 value={reportCount}
@@ -454,7 +480,6 @@ export default function Dashboard() {
                 onClick={() => navigate("/reports")}
               />
 
-              {/* 3. Stations Online — GET /water-stations */}
               <StatCard
                 index={2} icon="📡" title="Stations Online"
                 value={stationCount}
@@ -463,7 +488,6 @@ export default function Dashboard() {
                 loading={loadingStations}
               />
 
-              {/* 4. Water Quality — GET /water-quality */}
               <StatCard
                 index={3} icon="💧" title="Water Quality"
                 value={
