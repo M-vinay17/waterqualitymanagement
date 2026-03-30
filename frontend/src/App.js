@@ -16,48 +16,54 @@ import RoleGuard from "./components/RoleGuard";
 import Forbidden from "./pages/Forbidden";
 
 function App() {
-  const currentUser = {
-    role: localStorage.getItem("user_role"),
-    email: localStorage.getItem("user_email")
-  };
+const currentUser = {
+role: localStorage.getItem("user_role"),
+email: localStorage.getItem("user_email")
+};
 
-  return (
-    <Router>
-      <Routes>
-        {/* Default */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+return ( <Router> <Routes>
 
-        {/* Authentication */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
 
-        {/* Main Pages */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/alerts" element={<Alerts />} />
-        <Route path="/alerts/:id" element={<AlertDetails />} />
-        <Route path="/reports" element={<UserReports />} />
-        <Route path="/water-stations" element={<WaterStation />} />
-        <Route path="/profile" element={<Profile />} />
+    {/* Default */}
+    <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Charts */}
-        <Route path="/charts" element={<HistoricalCharts />} />
+    {/* Authentication */}
+    <Route path="/login" element={<Login />} />
+    <Route path="/register" element={<Register />} />
 
-        {/* NGO Dashboard */}
-        <Route
-          path="/ngo-dashboard"
-          element={
-            <RoleGuard allowedRoles={["ngo", "admin"]} user={currentUser}>
-              <NgoDashboard user={currentUser} />
-            </RoleGuard>
-          }
-        />
+    {/* Main Pages */}
+    <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/alerts" element={<Alerts />} />
+    <Route path="/alerts/:id" element={<AlertDetails />} />
+    <Route path="/reports" element={<UserReports />} />
+    <Route path="/water-stations" element={<WaterStation />} />
+    <Route path="/profile" element={<Profile />} />
 
-        {/* Forbidden */}
-        <Route path="/403" element={<Forbidden />} />
-      </Routes>
-    </Router>
-  );
+    {/* Charts */}
+    <Route path="/charts" element={<HistoricalCharts />} />
+    <Route path="/alerts/history" element={<HistoricalCharts />} />
+
+    {/* NGO Dashboard */}
+    <Route
+      path="/ngo-dashboard"
+      element={
+        <RoleGuard allowedRoles={["ngo", "admin"]} user={currentUser}>
+          <NgoDashboard user={currentUser} />
+        </RoleGuard>
+      }
+    />
+
+    {/* Forbidden */}
+    <Route path="/403" element={<Forbidden />} />
+
+    {/* Fallback */}
+    <Route path="*" element={<Navigate to="/login" replace />} />
+
+  </Routes>
+</Router>
+
+
+);
 }
 
 export default App;

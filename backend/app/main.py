@@ -4,27 +4,31 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 # Routers
+
 from app.routes import (
-    user,
-    auth,
-    water,
-    search,
-    water_station,
-    report,
-    alert,
-    collaboration,
-    ngo_stations,
-    websocket,
-    predictive_alerts
+user,
+auth,
+water,
+search,
+water_station,
+report,
+alert,
+collaboration,
+ngo_stations,
+websocket,
+predictive_alerts
 )
 
 # Services
+
 from app.services.ws_manager import ws_manager
 
 # Database
+
 from app.core.database import engine, Base
 
 # Models (register with SQLAlchemy)
+
 from app.models import user as user_model
 from app.models import water_reading
 from app.models import water_station as water_station_model
@@ -35,34 +39,35 @@ from app.models import alert as alert_model
 from app.models import collaboration as collaboration_model
 from app.models import ngo_station as ngo_station
 
+# FastAPI App
 
 app = FastAPI(
-    title="AquaWatch API",
-    description="Water Quality Monitoring System Backend API",
-    version="1.0.0"
+title="AquaWatch API",
+description="Water Quality Monitoring System Backend API",
+version="1.0.0"
 )
-
 
 # CORS Middleware
+
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # change in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+CORSMiddleware,
+allow_origins=["*"],  # change in production
+allow_credentials=True,
+allow_methods=["*"],
+allow_headers=["*"],
 )
 
-
 # Static Files (Uploads)
+
 os.makedirs("static/uploads", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
 # Create DB Tables
+
 Base.metadata.create_all(bind=engine)
 
-
 # Include Routers
+
 app.include_router(auth.router, tags=["Auth"])
 app.include_router(user.router, tags=["Users"])
 app.include_router(water.router, tags=["Water"])
@@ -72,21 +77,21 @@ app.include_router(report.router, tags=["Reports"])
 app.include_router(alert.router, prefix="/alerts", tags=["Alerts"])
 
 # Your modules
+
 app.include_router(collaboration.router, tags=["Collaborations"])
 app.include_router(ngo_stations.router, tags=["NGO Stations"])
 
 # Teammate modules
+
 app.include_router(websocket.router, tags=["WebSocket"])
 app.include_router(predictive_alerts.router, prefix="/api/v1", tags=["Predictive Alerts"])
 
-
-# Root Endpoint
 @app.get("/")
 def home():
     return {"message": "Backend is running successfully!"}
 
-
 # Health Check
+
 @app.get("/health")
 def health():
     return {"status": "healthy"}
