@@ -1,9 +1,8 @@
-// src/services/api.js
+
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // only if you use navigate in interceptor
 
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000", // or import.meta.env.VITE_API_URL in production
+  baseURL: "http://127.0.0.1:5000", // or import.meta.env.VITE_API_URL in production
   timeout: 10000,                   // 10 seconds timeout
   headers: {
     "Content-Type": "application/json",

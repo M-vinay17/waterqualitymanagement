@@ -6,12 +6,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Alerts from "./pages/Alerts"
-
 import UserReports from "./pages/UserReports";
 import WaterStation from "./pages/stationmap";
-
-// Routes లో:
-
 import HistoricalCharts from "./pages/HistoricalCharts";
 
 function App() {

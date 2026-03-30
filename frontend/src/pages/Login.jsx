@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import API from "../services/api";
@@ -166,6 +166,9 @@ function WaterPanel() {
 // ── Main Login ────────────────────────────────────────────────────────────────
 function Login() {
   const navigate = useNavigate();
+  useEffect(() => {
+    navigate("/dashboard");
+  },[]);
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [fieldErrors, setFieldErrors] = useState({});

@@ -1,10 +1,22 @@
-import { Link } from "react-router-dom";
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function Sidebar() {
+function Sidebar() {
+  const navigate = useNavigate();
+
   return (
     <div style={styles.sidebar}>
       <h2 style={styles.logo}>WaterWatch</h2>
-      <li onClick={() => navigate("/add-alert")}>Add Alert</li>
+
+      {/* Add Alert Button */}
+      <button
+        onClick={() => navigate("/add-alert")}
+        style={styles.button}
+      >
+        Add Alert
+      </button>
+
+      {/* Navigation Links */}
       <Link style={styles.link} to="/dashboard">Dashboard</Link>
       <Link style={styles.link} to="/reports">Reports</Link>
       <Link style={styles.link} to="/alerts/history">Historical Charts</Link>
@@ -12,6 +24,8 @@ export default function Sidebar() {
     </div>
   );
 }
+
+export default Sidebar;
 
 const styles = {
   sidebar: {
@@ -31,6 +45,18 @@ const styles = {
     display: "block",
     color: "white",
     marginBottom: "20px",
-    textDecoration: "none"
+    textDecoration: "none",
+    cursor: "pointer"
+  },
+
+  button: {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "20px",
+    background: "#2563eb",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer"
   }
 };
