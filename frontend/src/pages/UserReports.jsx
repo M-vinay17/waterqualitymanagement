@@ -18,6 +18,281 @@ function formatDate(iso) {
   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+// ── Map Location Picker Modal ──────────────────────────────────────────────────
+function MapPickerModal({ onConfirm, onClose, initialCoords }) {
+  const mapRef = useRef(null);
+  const leafletMapRef = useRef(null);
+  const markerRef = useRef(null);
+  const [pickedCoords, setPickedCoords] = useState(initialCoords || null);
+  const [reverseLabel, setReverseLabel] = useState("");
+  const [loadingLabel, setLoadingLabel] = useState(false);
+
+  // Reverse geocode using Nominatim
+  const reverseGeocode = async (lat, lng) => {
+    setLoadingLabel(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+      );
+      const data = await res.json();
+      const addr = data.address || {};
+      const parts = [
+        addr.village || addr.suburb || addr.neighbourhood || addr.hamlet,
+        addr.city || addr.town || addr.county,
+        addr.state,
+      ].filter(Boolean);
+      setReverseLabel(parts.join(", ") || `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+    } catch {
+      setReverseLabel(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+    } finally {
+      setLoadingLabel(false);
+    }
+  };
+
+  useEffect(() => {
+    // Dynamically load Leaflet CSS + JS if not already loaded
+    const loadLeaflet = () =>
+      new Promise((resolve) => {
+        if (window.L) { resolve(); return; }
+
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+        document.head.appendChild(link);
+
+        const script = document.createElement("script");
+        script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+        script.onload = resolve;
+        document.head.appendChild(script);
+      });
+
+    loadLeaflet().then(() => {
+      if (!mapRef.current || leafletMapRef.current) return;
+
+      const L = window.L;
+      const defaultCenter = initialCoords
+        ? [initialCoords.lat, initialCoords.lng]
+        : [15.9129, 79.74]; // Andhra Pradesh center
+
+      const map = L.map(mapRef.current, {
+        center: defaultCenter,
+        zoom: initialCoords ? 14 : 7,
+        zoomControl: true,
+      });
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Custom teal marker icon
+      const icon = L.divIcon({
+        className: "",
+        html: `<div style="
+          width:32px;height:40px;position:relative;
+        ">
+          <div style="
+            width:32px;height:32px;border-radius:50% 50% 50% 0;
+            background:linear-gradient(135deg,#0d9488,#0891b2);
+            transform:rotate(-45deg);
+            border:3px solid #fff;
+            box-shadow:0 3px 12px rgba(13,148,136,0.5);
+          "></div>
+          <div style="
+            position:absolute;top:8px;left:8px;
+            width:16px;height:16px;border-radius:50%;
+            background:#fff;opacity:0.9;
+          "></div>
+        </div>`,
+        iconSize: [32, 40],
+        iconAnchor: [16, 40],
+      });
+
+      // Place initial marker if coords given
+      if (initialCoords) {
+        markerRef.current = L.marker([initialCoords.lat, initialCoords.lng], { icon }).addTo(map);
+        reverseGeocode(initialCoords.lat, initialCoords.lng);
+      }
+
+      map.on("click", (e) => {
+        const { lat, lng } = e.latlng;
+        setPickedCoords({ lat, lng });
+        reverseGeocode(lat, lng);
+
+        if (markerRef.current) {
+          markerRef.current.setLatLng([lat, lng]);
+        } else {
+          markerRef.current = L.marker([lat, lng], { icon }).addTo(map);
+        }
+      });
+
+      leafletMapRef.current = map;
+    });
+
+    return () => {
+      if (leafletMapRef.current) {
+        leafletMapRef.current.remove();
+        leafletMapRef.current = null;
+        markerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleConfirm = () => {
+    if (!pickedCoords) return;
+    // Pass coords + human-readable label
+    onConfirm({
+      coords: pickedCoords,
+      label: reverseLabel || `${pickedCoords.lat.toFixed(5)}, ${pickedCoords.lng.toFixed(5)}`,
+    });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        background: "rgba(15,23,42,0.7)",
+        backdropFilter: "blur(4px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "16px",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: "spring", damping: 28, stiffness: 350 }}
+        style={{
+          background: "#fff",
+          borderRadius: "16px",
+          border: "1.5px solid #e2e8f0",
+          overflow: "hidden",
+          width: "100%",
+          maxWidth: "680px",
+          boxShadow: "0 24px 80px rgba(0,0,0,0.25)",
+        }}
+      >
+        {/* Modal header */}
+        <div style={{
+          padding: "16px 20px",
+          borderBottom: "1.5px solid #f1f5f9",
+          background: "linear-gradient(135deg, #f0fdfa, #f0f9ff)",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          <div>
+            <div style={{
+              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontSize: "18px", color: "#0f172a", marginBottom: "2px",
+            }}>
+              Pick Location on Map
+            </div>
+            <div style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: "9px", color: "#64748b", letterSpacing: "0.1em",
+            }}>
+              CLICK ANYWHERE ON THE MAP TO DROP A PIN
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: "32px", height: "32px", borderRadius: "8px",
+              background: "#f1f5f9", border: "1px solid #e2e8f0",
+              cursor: "pointer", color: "#64748b",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "16px", fontFamily: "monospace",
+              transition: "all 0.15s",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Map */}
+        <div
+          ref={mapRef}
+          style={{ width: "100%", height: "380px", background: "#e2e8f0" }}
+        />
+
+        {/* Footer */}
+        <div style={{
+          padding: "14px 20px",
+          borderTop: "1.5px solid #f1f5f9",
+          display: "flex", alignItems: "center", gap: "12px",
+          background: "#fafafa",
+        }}>
+          {/* Picked location display */}
+          <div style={{ flex: 1 }}>
+            {pickedCoords ? (
+              <div>
+                <div style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: "10px", color: "#0f172a", fontWeight: 600,
+                  marginBottom: "2px",
+                }}>
+                  {loadingLabel ? "Resolving address…" : reverseLabel}
+                </div>
+                <div style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: "8px", color: "#94a3b8", letterSpacing: "0.08em",
+                }}>
+                  {pickedCoords.lat.toFixed(6)}, {pickedCoords.lng.toFixed(6)}
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: "9px", color: "#94a3b8", letterSpacing: "0.08em",
+              }}>
+                📍 No location selected yet
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={onClose}
+            style={{
+              padding: "9px 16px", borderRadius: "8px",
+              background: "#f1f5f9", border: "1.5px solid #e2e8f0",
+              cursor: "pointer", color: "#475569",
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: "9px", letterSpacing: "0.1em",
+              transition: "all 0.15s",
+            }}
+          >
+            CANCEL
+          </button>
+
+          <button
+            onClick={handleConfirm}
+            disabled={!pickedCoords}
+            style={{
+              padding: "9px 20px", borderRadius: "8px",
+              background: pickedCoords
+                ? "linear-gradient(135deg, #0d9488, #0891b2)"
+                : "#cbd5e1",
+              border: "none",
+              cursor: pickedCoords ? "pointer" : "not-allowed",
+              color: "#fff",
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: "9px", letterSpacing: "0.1em", fontWeight: 700,
+              boxShadow: pickedCoords ? "0 4px 12px rgba(13,148,136,0.3)" : "none",
+              transition: "all 0.2s",
+            }}
+          >
+            CONFIRM LOCATION →
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ── Field wrapper ──────────────────────────────────────────────────────────────
 function Field({ label, required, children, hint }) {
   return (
@@ -255,11 +530,15 @@ function ReportCard({ report, index }) {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 const UserReports = () => {
-  const [reports,    setReports]    = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error,      setError]      = useState(null);
-  const [success,    setSuccess]    = useState(false);
+  const [reports,      setReports]      = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [submitting,   setSubmitting]   = useState(false);
+  const [error,        setError]        = useState(null);
+  const [success,      setSuccess]      = useState(false);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
+
+  // Store raw coords separately so we can pass them back into the map picker
+  const [pickedCoords, setPickedCoords] = useState(null);
 
   const [formData, setFormData] = useState({
     water_source: "", description: "", location: "", photo: null,
@@ -273,7 +552,6 @@ const UserReports = () => {
       const res = await api.get("/reports/me");
       setReports(res.data);
     } catch (err) {
-      // ✅ 401 → api.js interceptor handles redirect to /login automatically
       if (err.response?.status !== 401) {
         setError("Failed to load reports. Please try again.");
       }
@@ -287,11 +565,21 @@ const UserReports = () => {
   const handleDetectLocation = () => {
     if (!navigator.geolocation) { alert("Geolocation not supported."); return; }
     navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      setPickedCoords({ lat, lng });
       setFormData(prev => ({
         ...prev,
-        location: `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`,
+        location: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
       }));
     });
+  };
+
+  // Called when user confirms a pin in the map modal
+  const handleMapConfirm = ({ coords, label }) => {
+    setPickedCoords(coords);
+    setFormData(prev => ({ ...prev, location: label }));
+    setMapPickerOpen(false);
   };
 
   const handleSubmit = async (e) => {
@@ -304,13 +592,13 @@ const UserReports = () => {
       payload.append("description",   formData.description);
       if (formData.photo) payload.append("photo", formData.photo);
 
-      // ✅ api instance auto-attaches JWT; Content-Type set to multipart manually
       await api.post("/reports/", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       await fetchMyReports();
       setFormData({ water_source: "", description: "", location: "", photo: null });
+      setPickedCoords(null);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err) {
@@ -339,6 +627,17 @@ const UserReports = () => {
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
+
+      {/* ── Map Picker Modal ── */}
+      <AnimatePresence>
+        {mapPickerOpen && (
+          <MapPickerModal
+            onConfirm={handleMapConfirm}
+            onClose={() => setMapPickerOpen(false)}
+            initialCoords={pickedCoords}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── Page header ── */}
       <div style={{
@@ -447,28 +746,65 @@ const UserReports = () => {
                 />
               </Field>
 
-              <Field label="Location" required hint="Enter address, landmark, or use GPS coordinates">
+              {/* ── Location field with 3 options ── */}
+              <Field label="Location" required hint="Type manually, use GPS, or pick on map">
                 <InputField
                   name="location" value={formData.location}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    handleChange(e);
+                    // If user edits manually, clear stored coords
+                    setPickedCoords(null);
+                  }}
                   placeholder="e.g. Near Krishna Barrage, Vijayawada"
                   required
                 />
-                <button
-                  type="button" onClick={handleDetectLocation}
-                  style={{
-                    alignSelf: "flex-start",
-                    display: "inline-flex", alignItems: "center", gap: "6px",
-                    padding: "6px 12px", borderRadius: "6px",
-                    background: "rgba(13,148,136,0.06)",
-                    border: "1px solid rgba(13,148,136,0.2)",
-                    color: "#0d9488", cursor: "pointer",
+
+                {/* Location action buttons row */}
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                  {/* GPS detect */}
+                  <button
+                    type="button" onClick={handleDetectLocation}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: "5px",
+                      padding: "6px 11px", borderRadius: "6px",
+                      background: "rgba(13,148,136,0.06)",
+                      border: "1px solid rgba(13,148,136,0.2)",
+                      color: "#0d9488", cursor: "pointer",
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: "9px", letterSpacing: "0.08em", transition: "all 0.15s",
+                    }}
+                  >
+                    📡 GPS DETECT
+                  </button>
+
+                  {/* Map picker */}
+                  <button
+                    type="button" onClick={() => setMapPickerOpen(true)}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: "5px",
+                      padding: "6px 11px", borderRadius: "6px",
+                      background: pickedCoords ? "rgba(13,148,136,0.12)" : "rgba(8,145,178,0.06)",
+                      border: `1px solid ${pickedCoords ? "rgba(13,148,136,0.4)" : "rgba(8,145,178,0.2)"}`,
+                      color: pickedCoords ? "#0d9488" : "#0891b2",
+                      cursor: "pointer",
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: "9px", letterSpacing: "0.08em", transition: "all 0.15s",
+                    }}
+                  >
+                    🗺️ {pickedCoords ? "MAP PIN SET ✓" : "PICK ON MAP"}
+                  </button>
+                </div>
+
+                {/* Show raw coords if picked from map */}
+                {pickedCoords && (
+                  <div style={{
                     fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: "9px", letterSpacing: "0.08em", transition: "all 0.15s",
-                  }}
-                >
-                  📡 DETECT GPS LOCATION
-                </button>
+                    fontSize: "8px", color: "#94a3b8", letterSpacing: "0.06em",
+                    marginTop: "-2px",
+                  }}>
+                    📌 {pickedCoords.lat.toFixed(6)}, {pickedCoords.lng.toFixed(6)}
+                  </div>
+                )}
               </Field>
 
               <Field label="Photo Evidence" hint="Optional but helps verification">
