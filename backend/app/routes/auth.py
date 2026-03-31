@@ -9,6 +9,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):
+    print("TYPE:", type(user.password))
+    print("VALUE:", user.password)
     
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:

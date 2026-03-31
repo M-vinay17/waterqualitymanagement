@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
+import Sidebar from "../components/Sidebar";
 import WaterMap from "../components/WaterMap";
-import Profile from "./Profile";   // Make sure this path is correct
+import PredictiveAlertBanner from "../components/PredictiveAlertBanner";
+import Profile from "./Profile";           // Make sure path is correct
+import AlertBadge from "../components/alerts/AlertBadge"; // if you still need it
 
 // ─── Status Helpers ───────────────────────────────────────────────────────────
 function deriveStatus(params = {}) {
@@ -51,10 +54,10 @@ function StatusDot({ status }) {
   );
 }
 
-// ─── Sidebar Nav Item ─────────────────────────────────────────────────────────
+// ─── Nav Item ────────────────────────────────────────────────────────────────
 function NavItem({ to, icon, label, badge, active }) {
   return (
-    <Link to={to} style={{ textDecoration: "none" }}>
+    <a href={to} style={{ textDecoration: "none" }}>   {/* Changed to <a> for simplicity, or keep Link if you prefer */}
       <div
         style={{
           display: "flex",
@@ -103,7 +106,7 @@ function NavItem({ to, icon, label, badge, active }) {
           </span>
         )}
       </div>
-    </Link>
+    </a>
   );
 }
 
@@ -285,7 +288,7 @@ function qualityLabel(status) {
   return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 }
 
-// ─── Main Dashboard Component ─────────────────────────────────────────────────
+// ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -302,6 +305,7 @@ export default function Dashboard() {
 
   // Fetch Data
   useEffect(() => {
+    // Alerts
     const fetchAlerts = () => {
       fetch("http://localhost:8000/alerts")
         .then((r) => r.json())
@@ -338,14 +342,8 @@ export default function Dashboard() {
 
   // Prevent body scroll when profile modal is open
   useEffect(() => {
-    if (profileOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    document.body.style.overflow = profileOpen ? "hidden" : "unset";
+    return () => { document.body.style.overflow = "unset"; };
   }, [profileOpen]);
 
   const navItems = [
@@ -373,27 +371,11 @@ export default function Dashboard() {
       <div style={{ display: "flex", minHeight: "100vh", background: "linear-gradient(160deg, #eaf4fd 0%, #f0f7ff 60%, #e8f0fb 100%)", fontFamily: "'DM Sans', sans-serif" }}>
 
         {/* Sidebar */}
-        <div style={{ width: "220px", flexShrink: 0, background: "#fff", borderRight: "1px solid #e2eaf4", display: "flex", flexDirection: "column", boxShadow: "2px 0 12px rgba(14,116,189,0.06)", position: "sticky", top: 0, height: "100vh" }}>
-          <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid #f1f5f9" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, #0e74bd, #38bdf8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", boxShadow: "0 3px 10px rgba(14,116,189,0.3)" }}>🌊</div>
-              <div>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "17px", color: "#0f172a", lineHeight: 1.1 }}>WaterWatch</div>
-                <div style={{ fontSize: "9px", color: "#94a3b8", letterSpacing: "0.1em" }}>AQUAWATCH</div>
-              </div>
-            </div>
-          </div>
+        <Sidebar />
 
-          <nav style={{ padding: "14px 10px", flex: 1 }}>
-            <div style={{ fontSize: "9px", color: "#cbd5e1", letterSpacing: "0.14em", fontWeight: 600, padding: "0 4px", marginBottom: "8px" }}>NAVIGATION</div>
-            {navItems.map((item) => (
-              <NavItem key={item.to} {...item} active={location.pathname === item.to} />
-            ))}
-          </nav>
-        </div>
-
-        {/* Main Content */}
+        {/* Main Content Area */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+          
           {/* Top Bar */}
           <div style={{ background: "#fff", borderBottom: "1px solid #e2eaf4", padding: "13px 26px", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 1px 6px rgba(14,116,189,0.05)", position: "sticky", top: 0, zIndex: 10 }}>
             <div>
@@ -412,7 +394,13 @@ export default function Dashboard() {
               {/* Profile Trigger */}
               <div
                 onClick={() => setProfileOpen(true)}
-                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 12px 6px 6px", borderRadius: "20px", cursor: "pointer", background: "rgba(14,116,189,0.06)", border: "1px solid rgba(14,116,189,0.15)", transition: "all 0.15s" }}
+                style={{ 
+                  display: "flex", alignItems: "center", gap: "8px", 
+                  padding: "6px 12px 6px 6px", borderRadius: "20px", 
+                  cursor: "pointer", background: "rgba(14,116,189,0.06)", 
+                  border: "1px solid rgba(14,116,189,0.15)", 
+                  transition: "all 0.15s" 
+                }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(14,116,189,0.12)")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(14,116,189,0.06)")}
               >
@@ -427,6 +415,8 @@ export default function Dashboard() {
 
           {/* Dashboard Content */}
           <div style={{ flex: 1, overflowY: "auto", padding: "22px 26px" }}>
+            <PredictiveAlertBanner />
+
             {/* Stat Cards */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginBottom: "20px" }}>
               <StatCard index={0} icon="🔔" title="Active Alerts" value={alertCount} sub="Auto-refreshes every 10s" accent="#ef4444" onClick={() => navigate("/alerts")} />
@@ -437,23 +427,30 @@ export default function Dashboard() {
 
             {/* Map + Side Panel */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 270px", gap: "16px" }}>
-              {/* Live Map - Controlled z-index */}
+              {/* Live Map */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                style={{ background: "#fff", borderRadius: "14px", border: "1px solid #e2eaf4", overflow: "hidden", boxShadow: "0 1px 8px rgba(14,116,189,0.07)", position: "relative", zIndex: 1 }}
+                style={{ 
+                  background: "#fff", 
+                  borderRadius: "14px", 
+                  border: "1px solid #e2eaf4", 
+                  overflow: "hidden", 
+                  boxShadow: "0 1px 8px rgba(14,116,189,0.07)", 
+                  position: "relative" 
+                }}
               >
                 <div style={{ padding: "13px 18px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>🗺️ Live Water Quality Map</div>
                   <span style={{ fontSize: "10px", color: "#94a3b8", fontFamily: "monospace" }}>Andhra Pradesh · India</span>
                 </div>
-                <div style={{ height: "420px", position: "relative", zIndex: 1 }}>
+                <div style={{ height: "420px", position: "relative" }}>
                   <WaterMap />
                 </div>
               </motion.div>
 
-              {/* Right Panel */}
+              {/* Right Sidebar Panel */}
               <div style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
                 <WaterStationCard navigate={navigate} />
 
@@ -464,7 +461,13 @@ export default function Dashboard() {
                   onClick={() => navigate("/reports")}
                   whileHover={{ y: -2, boxShadow: "0 6px 20px rgba(14,116,189,0.32)" }}
                   whileTap={{ scale: 0.97 }}
-                  style={{ width: "100%", padding: "13px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #0e74bd 0%, #38bdf8 100%)", color: "#fff", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: 600, boxShadow: "0 3px 12px rgba(14,116,189,0.28)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                  style={{ 
+                    width: "100%", padding: "13px", borderRadius: "10px", border: "none", 
+                    background: "linear-gradient(135deg, #0e74bd 0%, #38bdf8 100%)", 
+                    color: "#fff", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", 
+                    fontSize: "13px", fontWeight: 600, boxShadow: "0 3px 12px rgba(14,116,189,0.28)", 
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" 
+                  }}
                 >
                   📝 Submit Quick Report
                 </motion.button>
@@ -475,7 +478,10 @@ export default function Dashboard() {
                   transition={{ delay: 0.46 }}
                   onClick={() => navigate("/alerts/history")}
                   whileHover={{ y: -2, boxShadow: "0 4px 16px rgba(14,116,189,0.13)" }}
-                  style={{ background: "#fff", borderRadius: "12px", border: "1px solid #e2eaf4", padding: "14px 16px", cursor: "pointer", boxShadow: "0 1px 6px rgba(14,116,189,0.06)", transition: "all 0.15s" }}
+                  style={{ 
+                    background: "#fff", borderRadius: "12px", border: "1px solid #e2eaf4", 
+                    padding: "14px 16px", cursor: "pointer", boxShadow: "0 1px 6px rgba(14,116,189,0.06)" 
+                  }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <div style={{ width: "36px", height: "36px", borderRadius: "9px", background: "rgba(14,116,189,0.08)", border: "1px solid rgba(14,116,189,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>📊</div>
@@ -491,7 +497,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Profile Modal - High z-index to stay above map */}
+      {/* Profile Modal */}
       <AnimatePresence>
         {profileOpen && (
           <Profile isOpen={profileOpen} onClose={() => setProfileOpen(false)} />

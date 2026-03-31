@@ -20,6 +20,8 @@ class Report(Base):
 
     water_source = Column(String, nullable=False)
 
+    station_id = Column(Integer, ForeignKey("water_stations.id"))
+
     status = Column(String, default="pending")
 
     created_at = Column(TIMESTAMP, server_default=func.now())

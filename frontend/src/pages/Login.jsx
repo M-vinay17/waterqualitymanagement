@@ -7,6 +7,7 @@ import API from "../services/api";
 function FormInput({ label, name, type = "text", value, onChange, placeholder, required, error }) {
   const [focused, setFocused] = useState(false);
   const [show, setShow] = useState(false);
+
   const isPassword = type === "password";
 
   return (
@@ -95,7 +96,7 @@ function FormInput({ label, name, type = "text", value, onChange, placeholder, r
   );
 }
 
-// ── Left decorative panel ─────────────────────────────────────────────────────
+// ── Left Decorative Panel ─────────────────────────────────────────────────────
 function WaterPanel() {
   return (
     <div
@@ -113,45 +114,51 @@ function WaterPanel() {
       }}
     >
       <style>{`
-        @keyframes floatDrop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-        @keyframes rippleOut { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.8); opacity: 0; } }
+        @keyframes floatDrop { 
+          0%, 100% { transform: translateY(0); } 
+          50% { transform: translateY(-12px); } 
+        }
+        @keyframes rippleOut { 
+          0% { transform: scale(1); opacity: 0.5; } 
+          100% { transform: scale(2.8); opacity: 0; } 
+        }
       `}</style>
 
       {/* Decorative circles */}
-      <div style={{ position: "absolute", top: "8%", right: "8%", width: "180px", height: "180px", borderRadius: "50%", border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)" }} />
-      <div style={{ position: "absolute", bottom: "15%", left: "6%", width: "110px", height: "110px", borderRadius: "50%", border: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.02)" }} />
+      <div style={{
+        position: "absolute", top: "8%", right: "8%",
+        width: "180px", height: "180px", borderRadius: "50%",
+        border: "1px solid rgba(255,255,255,0.07)",
+        background: "rgba(255,255,255,0.03)"
+      }} />
 
-      {/* Floating drop */}
+      <div style={{
+        position: "absolute", bottom: "15%", left: "6%",
+        width: "110px", height: "110px", borderRadius: "50%",
+        border: "1px solid rgba(255,255,255,0.05)",
+        background: "rgba(255,255,255,0.02)"
+      }} />
+
+      {/* Floating Water Drop */}
       <div style={{ position: "relative", marginBottom: "32px", animation: "floatDrop 3.5s ease-in-out infinite" }}>
-        <div
-          style={{
-            width: "84px",
-            height: "84px",
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.14)",
-            backdropFilter: "blur(10px)",
-            border: "1.5px solid rgba(255,255,255,0.28)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "38px",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
+        <div style={{
+          width: "84px", height: "84px", borderRadius: "50%",
+          background: "rgba(255,255,255,0.14)", backdropFilter: "blur(10px)",
+          border: "1.5px solid rgba(255,255,255,0.28)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: "38px", position: "relative", zIndex: 1,
+        }}>
           💧
         </div>
+
         {[0, 0.8, 1.6].map((delay, i) => (
           <div
             key={i}
             style={{
               position: "absolute",
-              top: "50%",
-              left: "50%",
+              top: "50%", left: "50%",
               transform: "translate(-50%, -50%)",
-              width: "84px",
-              height: "84px",
-              borderRadius: "50%",
+              width: "84px", height: "84px", borderRadius: "50%",
               border: "1.5px solid rgba(255,255,255,0.25)",
               animation: `rippleOut 2.4s ease-out ${delay}s infinite`,
             }}
@@ -159,41 +166,39 @@ function WaterPanel() {
         ))}
       </div>
 
-      <div
-        style={{
-          fontFamily: "'Instrument Serif', Georgia, serif",
-          fontSize: "34px",
-          color: "#fff",
-          textAlign: "center",
-          lineHeight: 1.15,
-          marginBottom: "12px",
-          letterSpacing: "-0.01em",
-        }}
-      >
+      {/* Heading */}
+      <div style={{
+        fontFamily: "'Instrument Serif', Georgia, serif",
+        fontSize: "34px",
+        color: "#fff",
+        textAlign: "center",
+        lineHeight: 1.15,
+        marginBottom: "12px",
+        letterSpacing: "-0.01em",
+      }}>
         Safe Water<br />for All
       </div>
 
-      <div
-        style={{
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: "11px",
-          color: "rgba(255,255,255,0.65)",
-          textAlign: "center",
-          lineHeight: 1.9,
-          letterSpacing: "0.03em",
-          maxWidth: "260px",
-          marginBottom: "40px",
-        }}
-      >
+      <div style={{
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: "11px",
+        color: "rgba(255,255,255,0.65)",
+        textAlign: "center",
+        lineHeight: 1.9,
+        letterSpacing: "0.03em",
+        maxWidth: "260px",
+        marginBottom: "40px",
+      }}>
         Monitor real-time water quality, report issues, and protect rivers and lakes across India.
       </div>
 
+      {/* Features */}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "280px" }}>
         {[
-          { icon: "🗺️", text: "Live station maps across India", delay: "0.2s" },
-          { icon: "📋", text: "Citizen water quality reporting", delay: "0.35s" },
-          { icon: "🔔", text: "Alerts when quality drops", delay: "0.5s" },
-          { icon: "📊", text: "Historical trend analysis", delay: "0.65s" },
+          { icon: "🗺️", text: "Live station maps across India" },
+          { icon: "📋", text: "Citizen water quality reporting" },
+          { icon: "🔔", text: "Alerts when quality drops" },
+          { icon: "📊", text: "Historical trend analysis" },
         ].map((item, i) => (
           <div
             key={i}
@@ -209,20 +214,19 @@ function WaterPanel() {
             }}
           >
             <span style={{ fontSize: "16px" }}>{item.icon}</span>
-            <span
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: "10px",
-                color: "rgba(255,255,255,0.8)",
-                letterSpacing: "0.04em",
-              }}
-            >
+            <span style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: "10px",
+              color: "rgba(255,255,255,0.8)",
+              letterSpacing: "0.04em",
+            }}>
               {item.text}
             </span>
           </div>
         ))}
       </div>
 
+      {/* Bottom Wave */}
       <svg
         viewBox="0 0 1440 80"
         style={{ position: "absolute", bottom: 0, left: 0, width: "100%", opacity: 0.12 }}
@@ -270,6 +274,7 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setFieldErrors(errs);
@@ -287,7 +292,10 @@ function Login() {
 
       localStorage.setItem("token", res.data.access_token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      API.defaults.headers.common["Authorization"] = `Bearer ${res.data.access_token}`;
+
+      if (res.data.access_token) {
+        API.defaults.headers.common["Authorization"] = `Bearer ${res.data.access_token}`;
+      }
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
@@ -301,10 +309,9 @@ function Login() {
     window.location.href = `${API.defaults.baseURL}/auth/google`;
   };
 
-  // Forgot Password Handler (you can expand this later)
   const handleForgotPassword = () => {
-    alert("Forgot Password feature coming soon!"); // Replace with navigation or modal later
-    // navigate("/forgot-password"); // Uncomment when route is ready
+    alert("Forgot Password feature coming soon!");
+    // navigate("/forgot-password"); // Uncomment when you add the route
   };
 
   return (
@@ -322,6 +329,7 @@ function Login() {
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
         @media (max-width: 768px) {
           .login-left { display: none !important; }
           .login-right { width: 100% !important; }
@@ -385,10 +393,20 @@ function Login() {
                   🌊
                 </div>
                 <div>
-                  <div style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: "20px", color: "#0f172a", lineHeight: 1 }}>
+                  <div style={{
+                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontSize: "20px",
+                    color: "#0f172a",
+                    lineHeight: 1,
+                  }}>
                     Welcome back
                   </div>
-                  <div style={{ fontSize: "8px", color: "#94a3b8", letterSpacing: "0.15em", marginTop: "2px" }}>
+                  <div style={{
+                    fontSize: "8px",
+                    color: "#94a3b8",
+                    letterSpacing: "0.15em",
+                    marginTop: "2px",
+                  }}>
                     AQUAWATCH · WATER QUALITY MONITOR
                   </div>
                 </div>
@@ -396,7 +414,7 @@ function Login() {
             </div>
 
             <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: "18px" }}>
-              {/* Global Error */}
+              {/* Global Error Message */}
               <AnimatePresence>
                 {error && (
                   <motion.div
@@ -412,7 +430,9 @@ function Login() {
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <span>⚠️</span>
-                      <span style={{ fontSize: "11px", color: "#dc2626", lineHeight: 1.5 }}>{error}</span>
+                      <span style={{ fontSize: "11px", color: "#dc2626", lineHeight: 1.5 }}>
+                        {error}
+                      </span>
                       <button
                         onClick={() => setError("")}
                         style={{
@@ -452,6 +472,7 @@ function Login() {
                   color: "#334155",
                   fontWeight: 500,
                   boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                  transition: "all 0.15s",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = "#94a3b8";
@@ -505,7 +526,7 @@ function Login() {
                     error={fieldErrors.password}
                   />
 
-                  {/* Fixed: Forgot Password as Button */}
+                  {/* Forgot Password */}
                   <div style={{ textAlign: "right" }}>
                     <button
                       type="button"
@@ -590,7 +611,7 @@ function Login() {
                 </Link>
               </div>
 
-              {/* Legal Footer - Fixed Privacy Policy */}
+              {/* Legal Footer */}
               <div
                 style={{
                   textAlign: "center",
@@ -603,21 +624,13 @@ function Login() {
                 }}
               >
                 Protected by AquaWatch security.{" "}
-                <button
-                  type="button"
-                  onClick={() => alert("Privacy Policy - Coming soon")}
-                  style={{
-                    color: "#94a3b8",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                    fontSize: "8px",
-                    padding: 0,
-                  }}
+                <a
+                  href="#"
+                  style={{ color: "#94a3b8", textDecoration: "underline" }}
+                  onClick={(e) => { e.preventDefault(); alert("Privacy Policy - Coming soon"); }}
                 >
                   Privacy Policy
-                </button>
+                </a>
               </div>
             </div>
           </div>
