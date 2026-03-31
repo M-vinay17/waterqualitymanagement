@@ -1,28 +1,62 @@
-import { Link } from "react-router-dom";
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function Sidebar() {
+function Sidebar() {
 
+  const navigate = useNavigate();
   const role = localStorage.getItem("user_role");
 
   return (
     <div style={styles.sidebar}>
+
       <h2 style={styles.logo}>WaterWatch</h2>
 
-      <Link style={styles.link} to="/dashboard">Map Overview</Link>
-      <Link style={styles.link} to="/reports">Reports</Link>
-      <Link style={styles.link} to="/alerts">Alerts</Link>
-      <Link style={styles.link} to="/water-stations">Water Stations</Link>
-      <Link style={styles.link} to="/alerts/history">Historical Charts</Link>
+      {/* Add Alert Button */}
+      <button
+        onClick={() => navigate("/add-alert")}
+        style={styles.button}
+      >
+        Add Alert
+      </button>
 
+      {/* Navigation Links */}
+      <Link style={styles.link} to="/dashboard">
+        Map Overview
+      </Link>
+
+      <Link style={styles.link} to="/reports">
+        Reports
+      </Link>
+
+      <Link style={styles.link} to="/alerts">
+        Alerts
+      </Link>
+
+      <Link style={styles.link} to="/water-stations">
+        Water Stations
+      </Link>
+
+      <Link style={styles.link} to="/alerts/history">
+        Historical Charts
+      </Link>
+
+      {/* NGO Portal (role based) */}
       {role === "ngo" && (
-        <Link style={styles.link} to="/ngo/dashboard">NGO Portal</Link>
+        <Link style={styles.link} to="/NgoDashboard">
+          NGO Portal
+        </Link>
       )}
 
-      <Link style={styles.link} to="/profile">Profile</Link>
+      <Link style={styles.link} to="/profile">
+        Profile
+      </Link>
 
     </div>
   );
 }
+
+export default Sidebar;
+
 
 const styles = {
   sidebar: {
@@ -31,17 +65,35 @@ const styles = {
     background: "#111827",
     color: "white",
     padding: "30px",
-    position: "fixed"
+    position: "fixed",
+    top: 0,
+    left: 0
   },
 
   logo: {
-    marginBottom: "40px"
+    marginBottom: "40px",
+    fontSize: "22px",
+    fontWeight: "bold"
   },
 
   link: {
     display: "block",
     color: "white",
     marginBottom: "20px",
-    textDecoration: "none"
+    textDecoration: "none",
+    cursor: "pointer",
+    fontSize: "15px"
+  },
+
+  button: {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "20px",
+    background: "#2563eb",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontWeight: "600"
   }
 };

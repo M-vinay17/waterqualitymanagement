@@ -14,12 +14,12 @@ let alerts = [
   { id: 10, type: "boil_notice", location: "Coimbatore", issued_at: "2026-06-01" }
 ];
 
-// ✅ GET ALL
+
 router.get("/", (req, res) => {
   res.json(alerts);
 });
 
-// ✅ GET BY ID
+
 router.get("/:id", (req, res) => {
   const alert = alerts.find(a => a.id == req.params.id);
 
@@ -30,7 +30,7 @@ router.get("/:id", (req, res) => {
   res.json(alert);
 });
 
-// ✅ POST (CREATE)
+
 router.post("/", (req, res) => {
   const newAlert = {
     id: alerts.length + 1,
@@ -45,7 +45,7 @@ router.post("/", (req, res) => {
   res.status(201).json(newAlert);
 });
 
-// ✅ PUT (UPDATE)
+
 router.put("/:id", (req, res) => {
   const index = alerts.findIndex(a => a.id == req.params.id);
 
@@ -61,7 +61,7 @@ router.put("/:id", (req, res) => {
   res.json(alerts[index]);
 });
 
-// ✅ DELETE
+
 router.delete("/:id", (req, res) => {
   const index = alerts.findIndex(a => a.id == req.params.id);
 
