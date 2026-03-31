@@ -23,13 +23,14 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* DEFAULT */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Public Routes */}
-        <Route path="/" element={<Login />} />
+        {/* PUBLIC */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Protected Routes */}
+        {/* PROTECTED */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute><UserReports /></ProtectedRoute>} />
         <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
@@ -38,6 +39,8 @@ function App() {
         <Route path="/water-stations" element={<ProtectedRoute><WaterStation /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
+        {/* FALLBACK */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

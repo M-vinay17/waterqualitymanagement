@@ -1,3 +1,27 @@
+<<<<<<< HEAD
+import PredictiveAlertBanner from "../components/PredictiveAlertBanner";
+import React from "react";
+import Sidebar from "../components/Sidebar";
+import WaterMap from "../components/WaterMap";
+
+function Dashboard() {
+  return (
+    <div style={{ display: "flex" }}>
+      
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main Content */}
+      <div style={{ flex: 1, padding: "20px" }}>
+        <h2>Dashboard Overview</h2>
+
+        <div style={{ marginTop: "20px" }}>
+          <WaterMap />
+        </div>
+      </div>
+
+    </div>
+=======
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -268,6 +292,7 @@ export default function Dashboard() {
     fetch("http://localhost:8000/reports")
       .then(r => r.json())
       .then(data => {
+        // handles both array response and {total: N} response
         setReportCount(Array.isArray(data) ? data.length : (data.total ?? data.count ?? 0));
       })
       .catch(() => setReportCount(0))
@@ -400,7 +425,7 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Profile pill */}
+              {/* Profile pill — top right */}
               <div
                 onClick={() => setProfileOpen(true)}
                 style={{
@@ -431,9 +456,10 @@ export default function Dashboard() {
           {/* Content */}
           <div style={{ flex: 1, overflowY: "auto", padding: "22px 26px" }}>
 
-            {/* ── 4 Stat cards ── */}
+            {/* ── 4 Stat cards — all live from backend ── */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginBottom: "20px" }}>
 
+              {/* 1. Active Alerts — GET /alerts */}
               <StatCard
                 index={0} icon="🔔" title="Active Alerts"
                 value={alertCount}
@@ -442,6 +468,7 @@ export default function Dashboard() {
                 onClick={() => navigate("/alerts")}
               />
 
+              {/* 2. Reports — GET /reports */}
               <StatCard
                 index={1} icon="📋" title="Reports"
                 value={reportCount}
@@ -451,6 +478,7 @@ export default function Dashboard() {
                 onClick={() => navigate("/reports")}
               />
 
+              {/* 3. Stations Online — GET /water-stations */}
               <StatCard
                 index={2} icon="📡" title="Stations Online"
                 value={stationCount}
@@ -459,6 +487,7 @@ export default function Dashboard() {
                 loading={loadingStations}
               />
 
+              {/* 4. Water Quality — GET /water-quality */}
               <StatCard
                 index={3} icon="💧" title="Water Quality"
                 value={
@@ -563,5 +592,6 @@ export default function Dashboard() {
 
       <Profile isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
     </>
+>>>>>>> 0aa9ab7351ba10e8aec7d2af2bf88f7a8a096154
   );
 }
