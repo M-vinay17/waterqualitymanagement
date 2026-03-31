@@ -166,9 +166,14 @@ function WaterPanel() {
 // ── Main Login ────────────────────────────────────────────────────────────────
 function Login() {
   const navigate = useNavigate();
+
+  // ✅ FIXED: Only redirect if a token already exists (user is already logged in)
   useEffect(() => {
-    navigate("/dashboard");
-  },[]);
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, []);
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [fieldErrors, setFieldErrors] = useState({});
