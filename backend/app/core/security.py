@@ -1,24 +1,24 @@
 # app/core/security.py
 
 from datetime import datetime, timedelta, timezone
-from typing import Annotated, Optional
+from typing import Optional
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.core.config import settings   # ← replaces hardcoded values
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.user import User
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+# HTTPBearer scheme — shows only token input in Swagger UI
+oauth2_scheme = HTTPBearer()
 
 
 class TokenData(BaseModel):
@@ -51,17 +51,18 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 # ---------------------------------------------------------
-# Get Current User  (reads from real DB now)
+# Get Current User
 # ---------------------------------------------------------
 
 async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> User:
     """
     Validates JWT token and returns real User from PostgreSQL.
-    Replaces the fake_get_user() test function.
     """
+    token = credentials.credentials  # extract token string from Bearer
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -71,7 +72,7 @@ async def get_current_user(
     try:
         payload = jwt.decode(
             token,
-            settings.SECRET_KEY,          # ← from .env via settings
+            settings.SECRET_KEY,
             algorithms=[settings.ALGORITHM]
         )
         email: str = payload.get("sub")

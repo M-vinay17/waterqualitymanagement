@@ -49,7 +49,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 Base.metadata.create_all(bind=engine)
 
 # Include Routers
-app.include_router(auth.router, tags=["Auth"])
+app.include_router(auth.router)
 app.include_router(user.router, tags=["Users"])
 app.include_router(water.router, tags=["Water"])
 app.include_router(search.router, tags=["Search"])
