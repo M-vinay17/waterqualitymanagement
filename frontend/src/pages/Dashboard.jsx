@@ -1,7 +1,12 @@
+<<<<<<< HEAD
 import PredictiveAlertBanner from "../components/PredictiveAlertBanner";
+=======
+>>>>>>> d4e98618fabf683a9bf63e5ec55ea2e5dd340d17
 import React from "react";
+import PredictiveAlertBanner from "../components/PredictiveAlertBanner";
 import Sidebar from "../components/Sidebar";
 import WaterMap from "../components/WaterMap";
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -595,3 +600,29 @@ export default function Dashboard() {
 
   );
 }
+=======
+
+function Dashboard() {
+  return (
+    <div style={{ display: "flex" }}>
+      
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main Content */}
+      <div style={{ flex: 1, padding: "20px" }}>
+        <PredictiveAlertBanner />
+        
+        <h2>Dashboard Overview</h2>
+
+        <div style={{ marginTop: "20px" }}>
+          <WaterMap />
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+export default Dashboard;
+>>>>>>> d4e98618fabf683a9bf63e5ec55ea2e5dd340d17
