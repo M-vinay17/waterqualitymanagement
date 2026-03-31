@@ -1,5 +1,8 @@
 from pydantic import BaseModel, EmailStr
 
+class UserRoleUpdate(BaseModel):
+    role: str
+    
 # Used when creating a new user
 class UserCreate(BaseModel):
     name: str

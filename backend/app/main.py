@@ -21,6 +21,9 @@ from app.models import station_readings
 from app.models import search as search_model
 from app.models import report as report_model
 from app.models import alert as alert_model   # ✅ FIXED (renamed)
+from app.routes import collaboration
+from app.routes import station_readings
+
 
 # FastAPI App
 app = FastAPI(
@@ -55,6 +58,9 @@ app.include_router(report.router, tags=["Reports"])
 app.include_router(alert.router, prefix="/alerts", tags=["Alerts"])  # ✅ now works
 app.include_router(websocket.router, tags=["WebSocket"])    
 app.include_router(predictive_alerts.router, prefix="/api/v1", tags=["Predictive Alerts"])
+app.include_router(collaboration.router)
+app.include_router(station_readings.router)
+
 # Root Endpoint
 @app.get("/")
 def home():

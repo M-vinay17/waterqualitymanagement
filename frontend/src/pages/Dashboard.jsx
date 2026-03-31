@@ -1,33 +1,33 @@
-<<<<<<< HEAD
 import PredictiveAlertBanner from "../components/PredictiveAlertBanner";
 import React from "react";
 import Sidebar from "../components/Sidebar";
 import WaterMap from "../components/WaterMap";
-
-function Dashboard() {
-  return (
-    <div style={{ display: "flex" }}>
-      
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Main Content */}
-      <div style={{ flex: 1, padding: "20px" }}>
-        <h2>Dashboard Overview</h2>
-
-        <div style={{ marginTop: "20px" }}>
-          <WaterMap />
-        </div>
-      </div>
-
-    </div>
-=======
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import WaterMap from "../components/WaterMap";
+// import WaterMap from "../components/WaterMap";
 import AlertBadge from "../components/alerts/AlertBadge";
 import Profile from "./Profile";
+
+// function Dashboard() {
+//   return (
+//     <div style={{ display: "flex" }}>
+      
+//       {/* Sidebar */}
+//       <Sidebar />
+
+//       {/* Main Content */}
+//       <div style={{ flex: 1, padding: "20px" }}>
+//         <h2>Dashboard Overview</h2>
+
+//         <div style={{ marginTop: "20px" }}>
+//           <WaterMap />
+//         </div>
+//       </div>
+
+//     </div>
+//   )}
+
 
 // ─── Status helpers ───────────────────────────────────────────────────────────
 function deriveStatus(params = {}) {
@@ -592,6 +592,6 @@ export default function Dashboard() {
 
       <Profile isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
     </>
->>>>>>> 0aa9ab7351ba10e8aec7d2af2bf88f7a8a096154
+
   );
 }
