@@ -42,19 +42,21 @@ const styles = {
   sidebar: {
     width: "220px",
     height: "100vh",
-    background: "#111827",
-    color: "white",
+    background: "#ffffff",
+    color: "#0f172a",
+    borderRight: "1px solid #e2eaf4",
     padding: "30px",
-    position: "fixed"
+    //position: "fixed"
   },
 
   logo: {
-    marginBottom: "40px"
+    marginBottom: "40px",
+    color: "#0f172a"   // ✅ FIXED (added)
   },
 
   link: {
     display: "block",
-    color: "white",
+    color: "#334155",  // ✅ FIXED (was white)
     marginBottom: "20px",
     textDecoration: "none",
     cursor: "pointer"

@@ -1,23 +1,12 @@
-
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 import Sidebar from "../components/Sidebar";
 import WaterMap from "../components/WaterMap";
 import PredictiveAlertBanner from "../components/PredictiveAlertBanner";
-import Profile from "./Profile";           // Make sure path is correct
-import AlertBadge from "../components/alerts/AlertBadge"; // if you still need it
-
-// ─── Status Helpers ───────────────────────────────────────────────────────────
-
-
-import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import WaterMap from "../components/WaterMap";
-import AlertBadge from "../components/alerts/AlertBadge";
 import Profile from "./Profile";
+import AlertBadge from "../components/alerts/AlertBadge";
 
 // ─── Status helpers ───────────────────────────────────────────────────────────
 function deriveStatus(params = {}) {
