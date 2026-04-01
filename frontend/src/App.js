@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
 import Login from "./pages/Login";
@@ -11,107 +12,115 @@ import UserReports from "./pages/UserReports";
 import WaterStation from "./pages/stationmap";
 import HistoricalCharts from "./pages/HistoricalCharts";
 
-// Protected Route Component
+// Authority
+import AuthorityDashboard from "./pages/authority/Dashboard";
+import RoleGuard from "./components/RoleGuard";
+import Forbidden from "./pages/Forbidden";
+
+// ✅ Protected Route
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
-  
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return children;
+  return token ? children : <Navigate to="/login" replace />;
 };
 
-function App() {
+export default function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        {/* Default - Redirect to Login */}
+
+        {/* Default */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Public Routes */}
+        {/* Public */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Protected Routes */}
-        <Route 
-          path="/dashboard" 
+        {/* User Dashboard */}
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/alerts" 
+
+        {/* Alerts */}
+        <Route
+          path="/alerts"
           element={
             <ProtectedRoute>
               <Alerts />
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/alerts/:id" 
+
+        <Route
+          path="/alerts/:id"
           element={
             <ProtectedRoute>
               <AlertDetails />
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/alerts/history" 
+
+        {/* Charts */}
+        <Route
+          path="/alerts/history"
           element={
             <ProtectedRoute>
               <HistoricalCharts />
             </ProtectedRoute>
-          } 
+          }
         />
 
-        <Route 
-          path="/reports" 
+        {/* Reports */}
+        <Route
+          path="/reports"
           element={
             <ProtectedRoute>
               <UserReports />
             </ProtectedRoute>
-          } 
+          }
         />
 
-        <Route 
-          path="/water-stations" 
+        {/* Stations */}
+        <Route
+          path="/water-stations"
           element={
             <ProtectedRoute>
               <WaterStation />
             </ProtectedRoute>
-          } 
+          }
         />
 
-        <Route 
-          path="/profile" 
+        {/* Profile */}
+        <Route
+          path="/profile"
           element={
             <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
-          } 
+          }
         />
 
-        {/* Optional / Legacy Route */}
-        <Route 
-          path="/charts" 
+        {/* ✅ AUTHORITY DASHBOARD (YOUR WORK) */}
+        <Route
+          path="/authority/dashboard"
           element={
-            <ProtectedRoute>
-              <HistoricalCharts />
-            </ProtectedRoute>
-          } 
+            <RoleGuard roles={["authority", "admin"]}>
+              <AuthorityDashboard />
+            </RoleGuard>
+          }
         />
 
-        {/* Fallback Route - 404 */}
+        {/* Forbidden */}
+        <Route path="/forbidden" element={<Forbidden />} />
+
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
+
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
-
-export default App;

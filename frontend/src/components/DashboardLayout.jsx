@@ -1,9 +1,14 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
+import Sidebar from "./Sidebar"; // ✅ ADD THIS
 
 function DashboardLayout() {
   return (
     <div style={styles.container}>
+      
+      {/* ✅ ADD SIDEBAR */}
+      <Sidebar />
+
       {/* Main Content */}
       <div style={styles.content}>
         <Outlet />

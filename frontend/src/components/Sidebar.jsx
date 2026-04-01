@@ -4,6 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 function Sidebar() {
   const navigate = useNavigate();
 
+  // ✅ TEMP ROLE (same like RoleGuard)
+  const userRole = "authority"; // change to "user" to test
+
   return (
     <div style={styles.sidebar}>
       <h2 style={styles.logo}>WaterWatch</h2>
@@ -21,6 +24,14 @@ function Sidebar() {
       <Link style={styles.link} to="/reports">Reports</Link>
       <Link style={styles.link} to="/alerts/history">Historical Charts</Link>
       <Link style={styles.link} to="/profile">Profile</Link>
+
+      {/* ✅ ADDED (ONLY THIS PART) */}
+      {(userRole === "authority" || userRole === "admin") && (
+        <Link style={styles.link} to="/authority/dashboard">
+          Authority Portal
+        </Link>
+      )}
+
     </div>
   );
 }

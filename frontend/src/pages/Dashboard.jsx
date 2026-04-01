@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +10,16 @@ import Profile from "./Profile";           // Make sure path is correct
 import AlertBadge from "../components/alerts/AlertBadge"; // if you still need it
 
 // ─── Status Helpers ───────────────────────────────────────────────────────────
+
+
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import WaterMap from "../components/WaterMap";
+import AlertBadge from "../components/alerts/AlertBadge";
+import Profile from "./Profile";
+
+// ─── Status helpers ───────────────────────────────────────────────────────────
 function deriveStatus(params = {}) {
   const ph = params?.ph?.value;
   const do_ = params?.do?.value;
@@ -346,12 +357,21 @@ export default function Dashboard() {
     return () => { document.body.style.overflow = "unset"; };
   }, [profileOpen]);
 
+
+  //authority
+  const userRole = "authority"; // temp (same like RoleGuard)
+
+  // ── Sidebar nav ────────────────────────────────────────────────────────────
   const navItems = [
-    { to: "/dashboard", icon: "🗺️", label: "Map Overview" },
-    { to: "/reports", icon: "📋", label: "Reports" },
-    { to: "/alerts", icon: "🔔", label: "Alerts", badge: alertCount },
-    { to: "/water-stations", icon: "💧", label: "Water Stations" },
-    { to: "/alerts/history", icon: "📊", label: "Historical Charts" },
+    { to: "/dashboard",      icon: "🗺️",  label: "Map Overview"      },
+    { to: "/reports",        icon: "📋",  label: "Reports"           },
+    { to: "/alerts",         icon: "🔔",  label: "Alerts", badge: alertCount },
+    { to: "/water-stations", icon: "💧",  label: "Water Stations"    },
+    { to: "/alerts/history", icon: "📊",  label: "Historical Charts" },
+
+      ...(userRole === "authority" || userRole === "admin"
+    ? [{ to: "/authority/dashboard", icon: "🛡️", label: "Authority Portal" }]
+    : []),
   ];
 
   const wqStatus = waterQuality?.status || waterQuality?.quality || null;
@@ -394,12 +414,12 @@ export default function Dashboard() {
               {/* Profile Trigger */}
               <div
                 onClick={() => setProfileOpen(true)}
-                style={{ 
-                  display: "flex", alignItems: "center", gap: "8px", 
-                  padding: "6px 12px 6px 6px", borderRadius: "20px", 
-                  cursor: "pointer", background: "rgba(14,116,189,0.06)", 
-                  border: "1px solid rgba(14,116,189,0.15)", 
-                  transition: "all 0.15s" 
+                style={{
+                  display: "flex", alignItems: "center", gap: "8px",
+                  padding: "6px 12px 6px 6px", borderRadius: "20px",
+                  cursor: "pointer", background: "rgba(14,116,189,0.06)",
+                  border: "1px solid rgba(14,116,189,0.15)",
+                  transition: "all 0.15s"
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(14,116,189,0.12)")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(14,116,189,0.06)")}
@@ -432,13 +452,13 @@ export default function Dashboard() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                style={{ 
-                  background: "#fff", 
-                  borderRadius: "14px", 
-                  border: "1px solid #e2eaf4", 
-                  overflow: "hidden", 
-                  boxShadow: "0 1px 8px rgba(14,116,189,0.07)", 
-                  position: "relative" 
+                style={{
+                  background: "#fff",
+                  borderRadius: "14px",
+                  border: "1px solid #e2eaf4",
+                  overflow: "hidden",
+                  boxShadow: "0 1px 8px rgba(14,116,189,0.07)",
+                  position: "relative"
                 }}
               >
                 <div style={{ padding: "13px 18px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -461,12 +481,12 @@ export default function Dashboard() {
                   onClick={() => navigate("/reports")}
                   whileHover={{ y: -2, boxShadow: "0 6px 20px rgba(14,116,189,0.32)" }}
                   whileTap={{ scale: 0.97 }}
-                  style={{ 
-                    width: "100%", padding: "13px", borderRadius: "10px", border: "none", 
-                    background: "linear-gradient(135deg, #0e74bd 0%, #38bdf8 100%)", 
-                    color: "#fff", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", 
-                    fontSize: "13px", fontWeight: 600, boxShadow: "0 3px 12px rgba(14,116,189,0.28)", 
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" 
+                  style={{
+                    width: "100%", padding: "13px", borderRadius: "10px", border: "none",
+                    background: "linear-gradient(135deg, #0e74bd 0%, #38bdf8 100%)",
+                    color: "#fff", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "13px", fontWeight: 600, boxShadow: "0 3px 12px rgba(14,116,189,0.28)",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px"
                   }}
                 >
                   📝 Submit Quick Report
@@ -478,9 +498,9 @@ export default function Dashboard() {
                   transition={{ delay: 0.46 }}
                   onClick={() => navigate("/alerts/history")}
                   whileHover={{ y: -2, boxShadow: "0 4px 16px rgba(14,116,189,0.13)" }}
-                  style={{ 
-                    background: "#fff", borderRadius: "12px", border: "1px solid #e2eaf4", 
-                    padding: "14px 16px", cursor: "pointer", boxShadow: "0 1px 6px rgba(14,116,189,0.06)" 
+                  style={{
+                    background: "#fff", borderRadius: "12px", border: "1px solid #e2eaf4",
+                    padding: "14px 16px", cursor: "pointer", boxShadow: "0 1px 6px rgba(14,116,189,0.06)"
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
