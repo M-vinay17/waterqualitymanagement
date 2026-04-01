@@ -46,6 +46,12 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     token = create_access_token({"sub": db_user.email, "role": db_user.role})
 
     return {
-        "access_token": token,
-        "token_type": "bearer"
+    "access_token": token,
+    "token_type": "bearer",
+    "user": {
+        "id": db_user.id,
+        "name": db_user.name,
+        "email": db_user.email,
+        "role": db_user.role
     }
+}

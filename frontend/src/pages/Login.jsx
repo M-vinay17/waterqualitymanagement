@@ -551,7 +551,8 @@ function Login() {
 
                 {/* Submit Button */}
                 <button
-                  type="submit"
+                  type="button"   // 🔴 CHANGE THIS
+  onClick={handleSubmit}
                   disabled={loading}
                   style={{
                     width: "100%",
