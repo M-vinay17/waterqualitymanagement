@@ -11,7 +11,10 @@ export default function Sidebar() {
     <div style={styles.sidebar}>
       <h2 style={styles.logo}>AquaWatch</h2>
 
-      {/* Add Alert Button (optional - keep if needed) */}
+      {/* Section Title */}
+      <p style={styles.section}>NAVIGATION</p>
+
+      {/* Add Alert Button */}
       <button
         onClick={() => navigate("/add-alert")}
         style={styles.button}
@@ -36,7 +39,7 @@ export default function Sidebar() {
         <Link style={styles.link} to="/authority/dashboard">🛡️ Authority Portal</Link>
       )}
 
-      <Link style={styles.link} to="/profile">👤 Profile</Link>
+      
     </div>
   );
 }
@@ -54,22 +57,31 @@ const styles = {
   },
 
   logo: {
-    marginBottom: "40px",
+    marginBottom: "30px",
     fontSize: "24px",
     fontWeight: "700",
     color: "#0f172a",
     fontFamily: "'DM Serif Display', serif",
   },
 
+  section: {
+    fontSize: "12px",
+    color: "#94a3b8",
+    marginBottom: "15px",
+    fontWeight: "600",
+    letterSpacing: "0.5px",
+    textTransform: "uppercase",
+  },
+
   link: {
     display: "block",
     color: "#334155",
-    marginBottom: "16px",
+    marginBottom: "8px",
     textDecoration: "none",
     fontSize: "15px",
-    padding: "8px 12px",
-    borderRadius: "6px",
-    transition: "all 0.2s",
+    padding: "10px 12px",
+    borderRadius: "8px",
+    transition: "all 0.2s ease",
     cursor: "pointer",
   },
 
@@ -84,5 +96,6 @@ const styles = {
     cursor: "pointer",
     fontWeight: "600",
     fontSize: "14px",
+    transition: "all 0.2s",
   },
 };

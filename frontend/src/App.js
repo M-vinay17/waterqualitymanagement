@@ -12,101 +12,35 @@ import UserReports from "./pages/UserReports";
 import WaterStation from "./pages/stationmap";
 import HistoricalCharts from "./pages/HistoricalCharts";
 
-// Authority & NGO Pages
+// Special Pages
 import AuthorityDashboard from "./pages/authority/Dashboard";
 import NgoDashboard from "./pages/NgoDashboard";
-
-// Components
-import RoleGuard from "./components/RoleGuard";
 import Forbidden from "./pages/Forbidden";
-
-// Protected Route Wrapper
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" replace />;
-};
+import RoleGuard from "./components/RoleGuard";
 
 export default function App() {
-  // Get current user safely from localStorage
-  const currentUser = {
-    role: localStorage.getItem("user_role") || "user",
-    email: localStorage.getItem("user_email") || ""
-  };
-
   return (
     <BrowserRouter>
       <Routes>
-
-        {/* Default / Public Routes */}
+        {/* Default Route */}
         <Route path="/" element={<Navigate to="/login" replace />} />
+
+        {/* Login Route - No ProtectedRoute wrapper needed here */}
         <Route path="/login" element={<Login />} />
+
+        {/* Public Route */}
         <Route path="/register" element={<Register />} />
 
-        {/* Protected User Routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+        {/* Protected Routes */}
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute><UserReports /></ProtectedRoute>} />
+        <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
+        <Route path="/alerts/:id" element={<ProtectedRoute><AlertDetails /></ProtectedRoute>} />
+        <Route path="/alerts/history" element={<ProtectedRoute><HistoricalCharts /></ProtectedRoute>} />
+        <Route path="/water-stations" element={<ProtectedRoute><WaterStation /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-        <Route
-          path="/reports"
-          element={
-            <ProtectedRoute>
-              <UserReports />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/alerts"
-          element={
-            <ProtectedRoute>
-              <Alerts />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/alerts/:id"
-          element={
-            <ProtectedRoute>
-              <AlertDetails />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/alerts/history"
-          element={
-            <ProtectedRoute>
-              <HistoricalCharts />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/water-stations"
-          element={
-            <ProtectedRoute>
-              <WaterStation />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Authority Dashboard */}
+        {/* Role-based Routes */}
         <Route
           path="/authority/dashboard"
           element={
@@ -116,24 +50,28 @@ export default function App() {
           }
         />
 
-        {/* NGO Dashboard */}
         <Route
           path="/NgoDashboard"
           element={
-            <RoleGuard allowedRoles={["ngo", "admin"]} user={currentUser}>
-              <NgoDashboard user={currentUser} />
+            <RoleGuard allowedRoles={["ngo", "admin"]}>
+              <NgoDashboard />
             </RoleGuard>
           }
         />
 
-        {/* Forbidden / Error Pages */}
+        {/* Error Pages */}
         <Route path="/forbidden" element={<Forbidden />} />
         <Route path="/403" element={<Forbidden />} />
 
-        {/* Fallback Route */}
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/login" replace />} />
-
       </Routes>
     </BrowserRouter>
   );
+}
+
+// Protected Route Component
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" replace />;
 }
