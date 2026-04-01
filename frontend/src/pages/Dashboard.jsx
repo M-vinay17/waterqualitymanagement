@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 import Sidebar from "../components/Sidebar";
 import WaterMap from "../components/WaterMap";
 import PredictiveAlertBanner from "../components/PredictiveAlertBanner";
 import Profile from "./Profile";
-import AlertBadge from "../components/alerts/AlertBadge";
 
-// ─── Status helpers ───────────────────────────────────────────────────────────
+// ─── Status Helpers ───────────────────────────────────────────────────────────
 function deriveStatus(params = {}) {
   const ph = params?.ph?.value;
   const do_ = params?.do?.value;
@@ -51,62 +50,6 @@ function StatusDot({ status }) {
         flexShrink: 0,
       }}
     />
-  );
-}
-
-// ─── Nav Item ────────────────────────────────────────────────────────────────
-function NavItem({ to, icon, label, badge, active }) {
-  return (
-    <a href={to} style={{ textDecoration: "none" }}>   {/* Changed to <a> for simplicity, or keep Link if you prefer */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          padding: "9px 12px",
-          borderRadius: "8px",
-          marginBottom: "2px",
-          background: active ? "rgba(14,116,189,0.1)" : "transparent",
-          borderLeft: `3px solid ${active ? "#0e74bd" : "transparent"}`,
-          transition: "all 0.15s",
-          cursor: "pointer",
-        }}
-        onMouseEnter={(e) => {
-          if (!active) e.currentTarget.style.background = "rgba(14,116,189,0.05)";
-        }}
-        onMouseLeave={(e) => {
-          if (!active) e.currentTarget.style.background = "transparent";
-        }}
-      >
-        <span style={{ fontSize: "15px" }}>{icon}</span>
-        <span
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "13px",
-            fontWeight: active ? 600 : 400,
-            color: active ? "#0e74bd" : "#64748b",
-          }}
-        >
-          {label}
-        </span>
-        {badge > 0 && (
-          <span
-            style={{
-              marginLeft: "auto",
-              background: "#ef4444",
-              color: "#fff",
-              borderRadius: "10px",
-              padding: "1px 6px",
-              fontSize: "9px",
-              fontFamily: "monospace",
-              fontWeight: 700,
-            }}
-          >
-            {badge}
-          </span>
-        )}
-      </div>
-    </a>
   );
 }
 
@@ -258,8 +201,6 @@ function WaterStationCard({ navigate }) {
   );
 }
 
-
-
 // ─── Quality Helpers ──────────────────────────────────────────────────────────
 function qualityColor(status) {
   if (!status) return "#0ea472";
@@ -277,7 +218,6 @@ function qualityLabel(status) {
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [alertCount, setAlertCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
@@ -289,14 +229,23 @@ export default function Dashboard() {
   const [loadingStations, setLoadingStations] = useState(true);
   const [loadingQuality, setLoadingQuality] = useState(true);
 
+  // Get user role safely
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("user"));
+  } catch (e) {
+    user = null;
+  }
+  const role = user?.role || "user";
+
   // Fetch Data
   useEffect(() => {
-    // Alerts
+    // Alerts (auto-refresh every 10s)
     const fetchAlerts = () => {
       fetch("http://localhost:8000/alerts")
         .then((r) => r.json())
         .then((data) => setAlertCount(Array.isArray(data) ? data.length : 0))
-        .catch(() => {});
+        .catch(() => setAlertCount(0));
     };
 
     fetchAlerts();
@@ -305,7 +254,9 @@ export default function Dashboard() {
     // Reports
     fetch("http://localhost:8000/reports")
       .then((r) => r.json())
-      .then((data) => setReportCount(Array.isArray(data) ? data.length : (data.total ?? data.count ?? 0)))
+      .then((data) => {
+        setReportCount(Array.isArray(data) ? data.length : (data.total ?? data.count ?? 0));
+      })
       .catch(() => setReportCount(0))
       .finally(() => setLoadingReports(false));
 
@@ -331,23 +282,6 @@ export default function Dashboard() {
     document.body.style.overflow = profileOpen ? "hidden" : "unset";
     return () => { document.body.style.overflow = "unset"; };
   }, [profileOpen]);
-
-
-  //authority
-  const userRole = "authority"; // temp (same like RoleGuard)
-
-  // ── Sidebar nav ────────────────────────────────────────────────────────────
-  const navItems = [
-    { to: "/dashboard",      icon: "🗺️",  label: "Map Overview"      },
-    { to: "/reports",        icon: "📋",  label: "Reports"           },
-    { to: "/alerts",         icon: "🔔",  label: "Alerts", badge: alertCount },
-    { to: "/water-stations", icon: "💧",  label: "Water Stations"    },
-    { to: "/alerts/history", icon: "📊",  label: "Historical Charts" },
-
-      ...(userRole === "authority" || userRole === "admin"
-    ? [{ to: "/authority/dashboard", icon: "🛡️", label: "Authority Portal" }]
-    : []),
-  ];
 
   const wqStatus = waterQuality?.status || waterQuality?.quality || null;
   const wqPh = waterQuality?.ph ?? waterQuality?.pH ?? null;
@@ -379,9 +313,18 @@ export default function Dashboard() {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              
+              {/* LIVE Badge */}
+              <div style={{
+                padding: "4px 10px", borderRadius: "5px",
+                background: "rgba(14,164,114,0.1)", border: "1px solid rgba(14,164,114,0.25)",
+                display: "flex", alignItems: "center", gap: "5px",
+              }}>
+                <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#0ea472" }} />
+                <span style={{ fontSize: "9px", color: "#0ea472", fontWeight: 700, fontFamily: "monospace", letterSpacing: "0.08em" }}>
+                  LIVE
+                </span>
+              </div>
 
-              
               {/* Profile Trigger */}
               <div
                 onClick={() => setProfileOpen(true)}
@@ -413,7 +356,15 @@ export default function Dashboard() {
               <StatCard index={0} icon="🔔" title="Active Alerts" value={alertCount} sub="Auto-refreshes every 10s" accent="#ef4444" onClick={() => navigate("/alerts")} />
               <StatCard index={1} icon="📋" title="Reports" value={reportCount} sub="Total submissions" accent="#f59e0b" loading={loadingReports} onClick={() => navigate("/reports")} />
               <StatCard index={2} icon="📡" title="Stations Online" value={stationCount} sub="Andhra Pradesh" accent="#0e74bd" loading={loadingStations} />
-              <StatCard index={3} icon="💧" title="Water Quality" value={<span style={{ color: qualityColor(wqStatus), fontSize: "26px" }}>{qualityLabel(wqStatus)}</span>} sub={wqSub} accent="#0ea472" loading={loadingQuality} />
+              <StatCard 
+                index={3} 
+                icon="💧" 
+                title="Water Quality" 
+                value={<span style={{ color: qualityColor(wqStatus), fontSize: "26px" }}>{qualityLabel(wqStatus)}</span>} 
+                sub={wqSub} 
+                accent="#0ea472" 
+                loading={loadingQuality} 
+              />
             </div>
 
             {/* Map + Side Panel */}

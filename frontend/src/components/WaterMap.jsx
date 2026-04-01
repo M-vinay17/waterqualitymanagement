@@ -13,6 +13,8 @@ import axios from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+import ReportsPanel from "./ReportsPanel";
+
 const { BaseLayer, Overlay } = LayersControl;
 
 
@@ -32,13 +34,22 @@ const greenIcon = createIcon("green");
 const yellowIcon = createIcon("yellow");
 const redIcon = createIcon("red");
 const blueIcon = createIcon("blue");
+const violetIcon = createIcon("violet");
 
 
 export default function WaterMap() {
 
   const [stations, setStations] = useState([]);
   const [govStations, setGovStations] = useState([]);
+  const [ngoStations, setNgoStations] = useState([]);
+
   const [apiStatus, setApiStatus] = useState("checking");
+
+  /* NGO Reports Panel State */
+
+  const [selectedStation, setSelectedStation] = useState(null);
+  const [reportsOpen, setReportsOpen] = useState(false);
+
 
 
 /* ---------------- Load Local Stations ---------------- */
@@ -85,6 +96,27 @@ export default function WaterMap() {
   };
 
 
+/* ---------------- NGO Stations ---------------- */
+
+  const loadNgoStations = async () => {
+
+    try {
+
+      const res = await axios.get(
+        "http://localhost:8000/ngo-stations"
+      );
+
+      setNgoStations(res.data || []);
+
+    } catch (err) {
+
+      console.error("NGO station error:", err);
+
+    }
+
+  };
+
+
 /* ---------------- Marker Color Logic ---------------- */
 
   const getMarkerIcon = (status) => {
@@ -96,6 +128,8 @@ export default function WaterMap() {
     return blueIcon;
   };
 
+   
+
 
 /* ---------------- Initial Load ---------------- */
 
@@ -103,6 +137,7 @@ export default function WaterMap() {
 
     loadStations();
     loadGovStations();
+    loadNgoStations();
 
     const interval = setInterval(() => {
       loadGovStations();
@@ -111,6 +146,7 @@ export default function WaterMap() {
     return () => clearInterval(interval);
 
   }, []);
+
 
 
   return (
@@ -311,9 +347,73 @@ export default function WaterMap() {
 
           </Overlay>
 
+
+{/* ---------------- NGO Monitoring Stations ---------------- */}
+
+          <Overlay name="NGO Monitoring Stations">
+
+            <LayerGroup>
+
+              <MarkerClusterGroup>
+
+                {ngoStations.map((s, i) => {
+
+                  if (!s.latitude || !s.longitude) return null;
+
+                  return (
+
+                    <Marker
+                      key={i}
+                      position={[s.latitude, s.longitude]}
+                      icon={violetIcon}
+                      eventHandlers={{
+                        click: () => {
+                          setSelectedStation(s.id);
+                          setReportsOpen(true);
+                        }
+                      }}
+                    >
+
+                      <Popup>
+
+                        <div>
+
+                          <h3>{s.name}</h3>
+
+                          <p><b>Managed By:</b> {s.managed_by}</p>
+
+                          <p><b>Type:</b> NGO Monitoring</p>
+
+                          <p>Click marker to view reports</p>
+
+                        </div>
+
+                      </Popup>
+
+                    </Marker>
+
+                  );
+
+                })}
+
+              </MarkerClusterGroup>
+
+            </LayerGroup>
+
+          </Overlay>
+
         </LayersControl>
 
       </MapContainer>
+
+
+{/* ---------------- Reports Panel ---------------- */}
+
+      <ReportsPanel
+        stationId={selectedStation}
+        open={reportsOpen}
+        onClose={() => setReportsOpen(false)}
+      />
 
     </div>
 

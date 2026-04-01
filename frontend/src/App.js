@@ -12,30 +12,37 @@ import UserReports from "./pages/UserReports";
 import WaterStation from "./pages/stationmap";
 import HistoricalCharts from "./pages/HistoricalCharts";
 
-// Authority
+// Authority & NGO Pages
 import AuthorityDashboard from "./pages/authority/Dashboard";
+import NgoDashboard from "./pages/NgoDashboard";
+
+// Components
 import RoleGuard from "./components/RoleGuard";
 import Forbidden from "./pages/Forbidden";
 
-// ✅ Protected Route
+// Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/login" replace />;
 };
 
 export default function App() {
+  // Get current user safely from localStorage
+  const currentUser = {
+    role: localStorage.getItem("user_role") || "user",
+    email: localStorage.getItem("user_email") || ""
+  };
+
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Default */}
+        {/* Default / Public Routes */}
         <Route path="/" element={<Navigate to="/login" replace />} />
-
-        {/* Public */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* User Dashboard */}
+        {/* Protected User Routes */}
         <Route
           path="/dashboard"
           element={
@@ -45,7 +52,15 @@ export default function App() {
           }
         />
 
-        {/* Alerts */}
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <UserReports />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/alerts"
           element={
@@ -64,7 +79,6 @@ export default function App() {
           }
         />
 
-        {/* Charts */}
         <Route
           path="/alerts/history"
           element={
@@ -74,17 +88,6 @@ export default function App() {
           }
         />
 
-        {/* Reports */}
-        <Route
-          path="/reports"
-          element={
-            <ProtectedRoute>
-              <UserReports />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Stations */}
         <Route
           path="/water-stations"
           element={
@@ -94,7 +97,6 @@ export default function App() {
           }
         />
 
-        {/* Profile */}
         <Route
           path="/profile"
           element={
@@ -104,20 +106,31 @@ export default function App() {
           }
         />
 
-        {/* ✅ AUTHORITY DASHBOARD (YOUR WORK) */}
+        {/* Authority Dashboard */}
         <Route
           path="/authority/dashboard"
           element={
-            <RoleGuard roles={["authority", "admin"]}>
+            <RoleGuard allowedRoles={["authority", "admin"]}>
               <AuthorityDashboard />
             </RoleGuard>
           }
         />
 
-        {/* Forbidden */}
-        <Route path="/forbidden" element={<Forbidden />} />
+        {/* NGO Dashboard */}
+        <Route
+          path="/NgoDashboard"
+          element={
+            <RoleGuard allowedRoles={["ngo", "admin"]} user={currentUser}>
+              <NgoDashboard user={currentUser} />
+            </RoleGuard>
+          }
+        />
 
-        {/* Fallback */}
+        {/* Forbidden / Error Pages */}
+        <Route path="/forbidden" element={<Forbidden />} />
+        <Route path="/403" element={<Forbidden />} />
+
+        {/* Fallback Route */}
         <Route path="*" element={<Navigate to="/login" replace />} />
 
       </Routes>

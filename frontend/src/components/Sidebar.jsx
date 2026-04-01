@@ -1,75 +1,88 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-function Sidebar() {
+export default function Sidebar() {
   const navigate = useNavigate();
 
-  // ✅ TEMP ROLE (same like RoleGuard)
-  const userRole = "authority"; // change to "user" to test
+  // Get user role safely from localStorage
+  const role = localStorage.getItem("user_role") || "user";
 
   return (
     <div style={styles.sidebar}>
-      <h2 style={styles.logo}>WaterWatch</h2>
+      <h2 style={styles.logo}>AquaWatch</h2>
 
-      {/* Add Alert Button */}
+      {/* Add Alert Button (optional - keep if needed) */}
       <button
         onClick={() => navigate("/add-alert")}
         style={styles.button}
       >
-        Add Alert
+        + Add Alert
       </button>
 
       {/* Navigation Links */}
-      <Link style={styles.link} to="/dashboard">Dashboard</Link>
-      <Link style={styles.link} to="/reports">Reports</Link>
-      <Link style={styles.link} to="/alerts/history">Historical Charts</Link>
-      <Link style={styles.link} to="/profile">Profile</Link>
+      <Link style={styles.link} to="/dashboard">🗺️ Map Overview</Link>
+      <Link style={styles.link} to="/reports">📋 Reports</Link>
+      <Link style={styles.link} to="/alerts">🔔 Alerts</Link>
+      <Link style={styles.link} to="/water-stations">💧 Water Stations</Link>
+      <Link style={styles.link} to="/alerts/history">📊 Historical Charts</Link>
 
-      {/* ✅ ADDED (ONLY THIS PART) */}
-      {(userRole === "authority" || userRole === "admin") && (
-        <Link style={styles.link} to="/authority/dashboard">
-          Authority Portal
-        </Link>
+      {/* NGO Portal - Visible only for NGO or Admin */}
+      {(role === "ngo" || role === "admin") && (
+        <Link style={styles.link} to="/NgoDashboard">🤝 NGO Portal</Link>
       )}
 
+      {/* Authority Portal - Visible only for Authority or Admin */}
+      {(role === "authority" || role === "admin") && (
+        <Link style={styles.link} to="/authority/dashboard">🛡️ Authority Portal</Link>
+      )}
+
+      <Link style={styles.link} to="/profile">👤 Profile</Link>
     </div>
   );
 }
 
-export default Sidebar;
-
 const styles = {
   sidebar: {
-    width: "220px",
+    width: "240px",
     height: "100vh",
     background: "#ffffff",
     color: "#0f172a",
     borderRight: "1px solid #e2eaf4",
-    padding: "30px",
-    //position: "fixed"
+    padding: "30px 20px",
+    overflowY: "auto",
+    boxShadow: "2px 0 8px rgba(0, 0, 0, 0.03)",
   },
 
   logo: {
     marginBottom: "40px",
-    color: "#0f172a"   // ✅ FIXED (added)
+    fontSize: "24px",
+    fontWeight: "700",
+    color: "#0f172a",
+    fontFamily: "'DM Serif Display', serif",
   },
 
   link: {
     display: "block",
-    color: "#334155",  // ✅ FIXED (was white)
-    marginBottom: "20px",
+    color: "#334155",
+    marginBottom: "16px",
     textDecoration: "none",
-    cursor: "pointer"
+    fontSize: "15px",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    transition: "all 0.2s",
+    cursor: "pointer",
   },
 
   button: {
     width: "100%",
-    padding: "10px",
-    marginBottom: "20px",
-    background: "#2563eb",
+    padding: "12px",
+    marginBottom: "25px",
+    background: "linear-gradient(135deg, #2563eb, #3b82f6)",
     color: "white",
     border: "none",
-    borderRadius: "5px",
-    cursor: "pointer"
-  }
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
+  },
 };
