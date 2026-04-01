@@ -11,24 +11,20 @@ function Sidebar() {
     <div style={styles.sidebar}>
       <h2 style={styles.logo}>WaterWatch</h2>
 
-      {/* Add Alert Button */}
-      <button
-        onClick={() => navigate("/add-alert")}
-        style={styles.button}
-      >
-        Add Alert
-      </button>
+      {/* Section Title */}
+      <p style={styles.section}>NAVIGATION</p>
 
       {/* Navigation Links */}
-      <Link style={styles.link} to="/dashboard">Dashboard</Link>
-      <Link style={styles.link} to="/reports">Reports</Link>
-      <Link style={styles.link} to="/alerts/history">Historical Charts</Link>
-      <Link style={styles.link} to="/profile">Profile</Link>
+      <Link style={styles.link} to="/dashboard">🗺️ Map Overview</Link>
+      <Link style={styles.link} to="/reports">📋 Reports</Link>
+      <Link style={styles.link} to="/alerts">🔔 Alerts</Link>
+      <Link style={styles.link} to="/water-stations">💧 Water Stations</Link>
+      <Link style={styles.link} to="/alerts/history">📊 Historical Charts</Link>
 
-      {/* ✅ ADDED (ONLY THIS PART) */}
+      {/* ✅ YOUR FEATURE (kept) */}
       {(userRole === "authority" || userRole === "admin") && (
         <Link style={styles.link} to="/authority/dashboard">
-          Authority Portal
+          🛡️ Authority Portal
         </Link>
       )}
 
@@ -45,31 +41,28 @@ const styles = {
     background: "#ffffff",
     color: "#0f172a",
     borderRight: "1px solid #e2eaf4",
-    padding: "30px",
-    //position: "fixed"
+    padding: "20px"
   },
 
   logo: {
-    marginBottom: "40px",
-    color: "#0f172a"   // ✅ FIXED (added)
+    marginBottom: "20px",
+    fontWeight: "bold",
+    color: "#0f172a"
+  },
+
+  section: {
+    fontSize: "12px",
+    color: "#94a3b8",
+    marginBottom: "15px"
   },
 
   link: {
     display: "block",
-    color: "#334155",  // ✅ FIXED (was white)
-    marginBottom: "20px",
+    color: "#334155",
+    marginBottom: "15px",
     textDecoration: "none",
-    cursor: "pointer"
-  },
-
-  button: {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "20px",
-    background: "#2563eb",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer"
+    cursor: "pointer",
+    padding: "8px",
+    borderRadius: "8px"
   }
 };

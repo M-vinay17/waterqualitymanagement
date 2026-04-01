@@ -24,15 +24,33 @@ const ProtectedRoute = ({ children }) => {
 };
 
 export default function App() {
+  const token = localStorage.getItem("token");
+
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Default */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* ✅ SMART DEFAULT ROUTE */}
+        <Route
+          path="/"
+          element={
+            token
+              ? <Navigate to="/dashboard" replace />
+              : <Navigate to="/login" replace />
+          }
+        />
+
+        {/* ✅ LOGIN (BLOCK IF ALREADY LOGGED IN) */}
+        <Route
+          path="/login"
+          element={
+            token
+              ? <Navigate to="/dashboard" replace />
+              : <Login />
+          }
+        />
 
         {/* Public */}
-        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
         {/* User Dashboard */}
@@ -104,7 +122,7 @@ export default function App() {
           }
         />
 
-        {/* ✅ AUTHORITY DASHBOARD (YOUR WORK) */}
+        {/* ✅ AUTHORITY DASHBOARD */}
         <Route
           path="/authority/dashboard"
           element={
