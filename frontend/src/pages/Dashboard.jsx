@@ -258,21 +258,7 @@ function WaterStationCard({ navigate }) {
   );
 }
 
-// ─── Live Clock ───────────────────────────────────────────────────────────────
-function LiveClock() {
-  const [time, setTime] = useState(new Date());
 
-  useEffect(() => {
-    const interval = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <span style={{ fontFamily: "monospace", fontSize: "11px", color: "#94a3b8" }}>
-      {time.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-    </span>
-  );
-}
 
 // ─── Quality Helpers ──────────────────────────────────────────────────────────
 function qualityColor(status) {
@@ -393,13 +379,9 @@ export default function Dashboard() {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <LiveClock />
+              
 
-              <div style={{ padding: "4px 10px", borderRadius: "5px", background: "rgba(14,164,114,0.1)", border: "1px solid rgba(14,164,114,0.25)", display: "flex", alignItems: "center", gap: "5px" }}>
-                <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#0ea472" }} />
-                <span style={{ fontSize: "9px", color: "#0ea472", fontWeight: 700, fontFamily: "monospace", letterSpacing: "0.08em" }}>LIVE</span>
-              </div>
-
+              
               {/* Profile Trigger */}
               <div
                 onClick={() => setProfileOpen(true)}
