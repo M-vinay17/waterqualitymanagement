@@ -20,7 +20,7 @@ from app.routes import (
 )
 
 # Services
-from app.services.ws_manager import ws_manager
+from app.services.ws_manager import manager as ws_manager
 
 # Database
 from app.core.database import engine, Base
@@ -61,31 +61,31 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Create DB Tables
 Base.metadata.create_all(bind=engine)
 
-# Include Routers
-app.include_router(auth.router, tags=["Auth"])
-app.include_router(user.router, tags=["Users"])
-app.include_router(water.router, tags=["Water"])
-app.include_router(search.router, tags=["Search"])
-app.include_router(water_station.router, tags=["Water Stations"])
-app.include_router(report.router, tags=["Reports"])
-app.include_router(alert.router, prefix="/alerts", tags=["Alerts"])
+# ── Routers ───────────────────────────────────────────────────────────────────
+# NOTE: Routers that already define prefix= in their file → NO prefix here
+#       Routers with no prefix in their file → prefix added here
 
-# Collaboration & NGO related routes
-app.include_router(collaboration.router, tags=["Collaborations"])
-app.include_router(ngo_stations.router, tags=["NGO Stations"])
-app.include_router(station_readings.router, tags=["Station Readings"])
+app.include_router(auth.router)                                                 # prefix="/auth"        defined in router
+app.include_router(user.router)                                                 # prefix="/users"       defined in router
+app.include_router(water.router)                                                # prefix="/water"       defined in router
+app.include_router(search.router)                                               # prefix="/search"      defined in router
+app.include_router(water_station.router)                                        # prefix="/water-stations" defined in router
+app.include_router(report.router)                                               # prefix="/reports"     defined in router
+app.include_router(collaboration.router)                                        # prefix="/api/v1/collaborations" defined in router
+app.include_router(station_readings.router)                                     # prefix="/api/v1/stations/readings" defined in router
 
-# Websocket & Predictive Alerts
-app.include_router(websocket.router, tags=["WebSocket"])
-app.include_router(predictive_alerts.router, prefix="/api/v1", tags=["Predictive Alerts"])
+# Routers with NO prefix in their file → add prefix here
+app.include_router(alert.router,             prefix="/alerts",                  tags=["Alerts"])
+app.include_router(ngo_stations.router,      prefix="/ngo-stations",            tags=["NGO Stations"])
+app.include_router(websocket.router,         prefix="/ws",                      tags=["WebSocket"])
+app.include_router(predictive_alerts.router, prefix="/api/v1/alerts/predictive",tags=["Predictive Alerts"])
 
-# Home Route
+# ── Home & Health ─────────────────────────────────────────────────────────────
 @app.get("/")
 def home():
     return {"message": "AquaWatch Backend is running successfully!"}
 
 
-# Health Check
 @app.get("/health")
 def health():
     return {"status": "healthy"}

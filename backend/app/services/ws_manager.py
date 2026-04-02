@@ -1,30 +1,30 @@
-# backend/app/services/ws_manager.py
-
 from fastapi import WebSocket
-import json
 
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: set[WebSocket] = set()
+        self.active_connections: list[WebSocket] = []
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
-        self.active_connections.add(websocket)
+        self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.discard(websocket)
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
 
-    async def broadcast(self, data: dict):
-        disconnected = set()
+    async def broadcast(self, message: dict):
+        disconnected = []
         for connection in self.active_connections:
             try:
-                await connection.send_text(json.dumps(data))
+                await connection.send_json(message)
             except Exception:
-                disconnected.add(connection)
-        # clean up dead connections
-        self.active_connections -= disconnected
+                disconnected.append(connection)
+
+        # Clean up dead connections
+        for conn in disconnected:
+            self.disconnect(conn)
 
 
-# ── singleton — import this everywhere ──
-ws_manager = ConnectionManager()
+# ✅ Singleton — import cheyyadaniki
+manager = ConnectionManager()

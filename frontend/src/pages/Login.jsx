@@ -237,6 +237,13 @@ function WaterPanel() {
   );
 }
 
+// ── Role-based redirect helper ────────────────────────────────────────────────
+function getRoleRedirect(role) {
+  if (role === "ngo") return "/ngo-dashboard";
+  if (role === "authority" || role === "admin") return "/authority/dashboard";
+  return "/dashboard";
+}
+
 // ── Main Login Component ──────────────────────────────────────────────────────
 function Login() {
   const navigate = useNavigate();
@@ -246,11 +253,12 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already logged in
+  // ✅ FIX: Redirect if already logged in — role-based
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/dashboard", { replace: true });
+    const role  = localStorage.getItem("user_role");
+    if (token && role) {
+      navigate(getRoleRedirect(role), { replace: true });
     }
   }, [navigate]);
 
@@ -290,14 +298,20 @@ function Login() {
         password: formData.password,
       });
 
-      localStorage.setItem("token", res.data.access_token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      const { access_token, user } = res.data;
 
-      if (res.data.access_token) {
-        API.defaults.headers.common["Authorization"] = `Bearer ${res.data.access_token}`;
-      }
+      // ✅ FIX: Store token + user + role + email separately
+      localStorage.setItem("token", access_token);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("user_role",  user.role);   // App.js reads "user_role"
+      localStorage.setItem("user_email", user.email);  // App.js reads "user_email"
 
-      navigate("/dashboard", { replace: true });
+      // Set default auth header
+      API.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+
+      // ✅ FIX: Navigate based on role
+      navigate(getRoleRedirect(user.role), { replace: true });
+
     } catch (err) {
       setError(err.response?.data?.detail || "Invalid email or password. Please try again.");
     } finally {
@@ -311,7 +325,6 @@ function Login() {
 
   const handleForgotPassword = () => {
     alert("Forgot Password feature coming soon!");
-    // navigate("/forgot-password"); // Uncomment when you add the route
   };
 
   return (
@@ -551,8 +564,7 @@ function Login() {
 
                 {/* Submit Button */}
                 <button
-                  type="button"   // 🔴 CHANGE THIS
-  onClick={handleSubmit}
+                  type="submit"
                   disabled={loading}
                   style={{
                     width: "100%",
@@ -625,13 +637,22 @@ function Login() {
                 }}
               >
                 Protected by AquaWatch security.{" "}
-                <a
-                  href="#"
-                  style={{ color: "#94a3b8", textDecoration: "underline" }}
-                  onClick={(e) => { e.preventDefault(); alert("Privacy Policy - Coming soon"); }}
+                <button
+                  type="button"
+                  onClick={() => alert("Privacy Policy - Coming soon")}
+                  style={{
+                    color: "#94a3b8",
+                    textDecoration: "underline",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: "8px",
+                    padding: 0,
+                  }}
                 >
                   Privacy Policy
-                </a>
+                </button>
               </div>
             </div>
           </div>

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from typing import List
 from datetime import datetime
-from app.services.ws_manager import ws_manager
+from app.services.ws_manager import manager as ws_manager
 from app.services.predictive_engine import analyse_station
 
 

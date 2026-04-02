@@ -8,7 +8,7 @@ class CollaborationCreate(BaseModel):
     ngo_name: str
     project_name: str
     contact_email: EmailStr
-    station_id: int   # Required when creating
+    station_id: Optional[int] = None   # ✅ Optional — FE form lo lekapothe 422 vastundi
 
 
 class CollaborationUpdate(BaseModel):
@@ -25,16 +25,15 @@ class CollaborationOut(BaseModel):
     ngo_name: str
     project_name: str
     contact_email: EmailStr
-    station_id: int
+    station_id: Optional[int] = None   # ✅ Optional — DB lo null unte error raadu
     status: str
     created_at: datetime
     report_count: int
 
     class Config:
-        from_attributes = True   # Replaces orm_mode in Pydantic v2
+        from_attributes = True
 
 
-# Optional: If you want a simpler response without report_count
 class CollaborationResponse(BaseModel):
     """Simple response schema without extra computed fields"""
     id: int

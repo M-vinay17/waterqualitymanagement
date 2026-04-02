@@ -1,7 +1,7 @@
 # backend/app/routes/websocket.py
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from app.services.ws_manager import ws_manager
+from app.services.ws_manager import manager as ws_manager
 
 router = APIRouter()
 

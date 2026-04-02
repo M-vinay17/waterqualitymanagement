@@ -14,7 +14,7 @@ from app.dependencies.role_guard import require_role
 from app.core.security import get_current_user
 
 router = APIRouter(
-    prefix="/api/v1/collaborations",
+    prefix="/collaborations",
     tags=["Collaborations"]
 )
 
