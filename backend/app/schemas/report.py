@@ -16,7 +16,9 @@ class ReportUpdate(BaseModel):
     water_source: str
     status: str
 
-
+class ReportStatusUpdate(BaseModel):
+    status: str
+    
 class ReportResponse(BaseModel):
     id: int
     user_id: int

@@ -1,9 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.schemas.user import UserCreate, UserUpdate, UserResponse
+from app.schemas.user import UserCreate, UserUpdate, UserResponse, UserRoleUpdate
 from app.models.user import User
 from app.core.database import get_db
 from app.core.security import hash_password, get_current_user
+from app.dependencies.role_guard import require_role
+
+
+
 
 router = APIRouter(
     prefix="/users",
@@ -41,8 +45,56 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 # ✅ GET ALL USERS
 @router.get("/", response_model=list[UserResponse])
-def get_all_users(db: Session = Depends(get_db)):
-    return db.query(User).all()
+def get_users(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin"))
+):
+    users = (
+        db.query(User)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+    return users
+
+@router.get("/test-ngo")
+def test_ngo(user=Depends(require_role("ngo", "admin"))):
+    return {"message": "NGO/Admin access granted"}
+
+
+@router.patch("/{user_id}/role", response_model=UserResponse)
+def update_user_role(
+    user_id: int,
+    data: UserRoleUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin"))
+):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # ❗ Prevent self-downgrade
+    if user.id == current_user.id and data.role != "admin":
+        raise HTTPException(
+            status_code=400,
+            detail="Admin cannot downgrade their own role"
+        )
+
+    # Validate role
+    allowed_roles = ["citizen", "ngo", "authority", "admin"]
+    if data.role not in allowed_roles:
+        raise HTTPException(status_code=400, detail="Invalid role")
+
+    user.role = data.role
+
+    db.commit()
+    db.refresh(user)
+
+    return user
 
 
 # ✅ GET SINGLE USER — /{user_id} must be BELOW /me
@@ -85,3 +137,4 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "User deleted successfully"}
+

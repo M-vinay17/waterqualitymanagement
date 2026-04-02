@@ -1,30 +1,39 @@
-import React from "react";
-import {BrowserRouter as Router,Routes,Route} from "react-router-dom";
+import AlertDetails from "./pages/AlertDetails";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import Alerts from "./pages/Alerts"
+import UserReports from "./pages/UserReports";
+import WaterStation from "./pages/stationmap";
+import HistoricalCharts from "./pages/HistoricalCharts";
 
-function AppOld(){
+function App() {
+  return (
+    <Router>
+      <Routes>
 
-return(
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-<Router>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/reports" element={<UserReports />} />
+        <Route path="/alerts" element={<Alerts/>}/>
+        <Route path="/water-stations" element={<WaterStation />} />
+        <Route path="/alerts/:id" element={<AlertDetails />} />
 
-<Routes>
+        <Route path="/profile" element={<Profile />} />
 
-<Route path="/" element={<Login/>} />
+        <Route path="/reports" element={<UserReports />} />
 
-<Route path="/register" element={<Register/>} />
+        <Route path="/alerts/history" element={<HistoricalCharts />} />
 
-<Route path="/dashboard" element={<Dashboard/>} />
-
-</Routes>
-
-</Router>
-
-);
-
+      </Routes>
+    </Router>
+  );
 }
 
-export default AppOld;
+export default App;
