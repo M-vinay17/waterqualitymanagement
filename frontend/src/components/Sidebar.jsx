@@ -54,9 +54,7 @@ export default function Sidebar() {
         </Link>
       )}
 
-      <Link style={styles.link} to="/profile">
-        Profile
-      </Link>
+      
     </div>
   );
 }

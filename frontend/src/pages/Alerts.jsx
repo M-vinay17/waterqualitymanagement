@@ -233,7 +233,7 @@ export default function Alerts() {
   useAlertSocket(setAlerts);
 
   useEffect(() => {
-    API.get("/api/alerts")
+    API.get("/alerts/")          // ✅ Fixed: was "/api/alerts"
       .then((res) => {
         console.log("API DATA:", res.data);
         setAlerts(res.data.reverse());

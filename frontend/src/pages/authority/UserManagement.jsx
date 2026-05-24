@@ -1,75 +1,83 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
+// ✅ Auth header helper — outside component to avoid recreating on every render
+const authHeaders = () => {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // ✅ FETCH USERS
   useEffect(() => {
-    fetch("/api/v1/users")
-      .then(res => res.json())
-      .then(data => {
-        console.log("Users:", data);
+    setLoading(true);
 
-        if (!data || data.length === 0) {
-          setUsers([
-            {
-              id: 1,
-              name: "John Doe",
-              email: "john@example.com",
-              role: "user",
-              location: "Station A",
-              joined: "2025-01-01"
-            },
-            {
-              id: 2,
-              name: "Admin User",
-              email: "admin@example.com",
-              role: "admin",
-              location: "HQ",
-              joined: "2024-12-01"
-            }
-          ]);
+    fetch("/users?skip=0&limit=100", { headers: authHeaders() })
+      .then(res => {
+        if (res.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        if (!res.ok) throw new Error(res.status);
+        return res.json();
+      })
+      .then(data => {
+        if (!Array.isArray(data) || data.length === 0) {
+          setUsers([]);
+          toast("No users found");
         } else {
           setUsers(data);
         }
       })
       .catch(() => {
+        toast.error("Failed to load users ❌");
         setUsers([]);
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   // ✅ UPDATE ROLE
   const handleRoleChange = async (id, newRole) => {
     const prevUsers = users;
 
-    // optimistic UI
+    // Optimistic UI update
     setUsers(prev =>
       prev.map(u => (u.id === id ? { ...u, role: newRole } : u))
     );
 
     try {
-      await fetch(`/api/v1/users/${id}/role`, {
+      const res = await fetch(`/users/${id}/role`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ role: newRole })
+        headers: authHeaders(),
+        body: JSON.stringify({ role: newRole }),
       });
+
+      if (res.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+
+      if (!res.ok) throw new Error(res.status); // triggers rollback
 
       toast.success("Role updated ✅");
     } catch (err) {
       console.error(err);
       toast.error("Failed to update role ❌");
-      setUsers(prevUsers); // rollback
+      setUsers(prevUsers); // rollback on failure
     }
   };
 
-  // ✅ SEARCH FILTER
+  // ✅ SEARCH FILTER — safe with optional chaining
   const filteredUsers = users.filter(u =>
-    u.name.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase())
+    u.name?.toLowerCase().includes(search.toLowerCase()) ||
+    u.email?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -86,47 +94,63 @@ export default function UserManagement() {
         onChange={e => setSearch(e.target.value)}
         className="mb-4 p-2 w-full rounded border"
       />
+      
 
       {/* TABLE */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-white border">
-          <thead className="bg-white/20">
-            <tr>
-              <th className="p-2">Name</th>
-              <th className="p-2">Email</th>
-              <th className="p-2">Role</th>
-              <th className="p-2">Location</th>
-              <th className="p-2">Joined</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredUsers.map(user => (
-              <tr key={user.id} className="border-t">
-                <td className="p-2">{user.name}</td>
-                <td className="p-2">{user.email}</td>
-
-                {/* ✅ ROLE DROPDOWN */}
-                <td className="p-2">
-                  <select
-                    value={user.role}
-                    onChange={e =>
-                      handleRoleChange(user.id, e.target.value)
-                    }
-                    className="text-black p-1 rounded"
-                  >
-                    <option value="user">User</option>
-                    <option value="authority">Authority</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </td>
-
-                <td className="p-2">{user.location}</td>
-                <td className="p-2">{user.joined}</td>
+        {loading ? (
+          <p className="text-center text-gray-400 py-6">Loading users...</p>
+        ) : (
+          <table className="w-full text-left text-white border">
+            <thead className="bg-white/20">
+              <tr>
+                <th className="p-2">Name</th>
+                <th className="p-2">Email</th>
+                <th className="p-2">Role</th>
+                <th className="p-2">Location</th>
+                <th className="p-2">Joined</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-4 text-center text-gray-400">
+                    No users found
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map(user => (
+                  <tr key={user.id} className="border-t">
+                    <td className="p-2">{user.name ?? "—"}</td>
+                    <td className="p-2">{user.email ?? "—"}</td>
+
+                    {/* ✅ ROLE DROPDOWN — values match backend allowed_roles */}
+                    <td className="p-2">
+                      <select
+                        value={user.role}
+                        onChange={e => handleRoleChange(user.id, e.target.value)}
+                        className="text-black p-1 rounded"
+                      >
+                        <option value="citizen">Citizen</option>
+                        <option value="ngo">NGO</option>
+                        <option value="authority">Authority</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </td>
+
+                    <td className="p-2">{user.location ?? "—"}</td>
+                    <td className="p-2">
+                      {user.created_at
+                        ? new Date(user.created_at).toLocaleDateString("en-IN")
+                        : "—"}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

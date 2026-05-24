@@ -1,5 +1,7 @@
-import alerts from "../utils/mockAlerts"
+// ✅ Fix
+import api from "./api";
 
-export const getAlerts = () => {
-return alerts
-}
+export const getAlerts = async () => {
+  const response = await api.get("/alerts/");
+  return response.data;
+};

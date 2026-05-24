@@ -21,7 +21,6 @@ from app.routes import (
 
 # Services
 from app.services.ws_manager import manager as ws_manager
-
 # Database
 from app.core.database import engine, Base
 
@@ -76,9 +75,11 @@ app.include_router(station_readings.router)                                     
 
 # Routers with NO prefix in their file → add prefix here
 app.include_router(alert.router,             prefix="/alerts",                  tags=["Alerts"])
-app.include_router(ngo_stations.router,      prefix="/ngo-stations",            tags=["NGO Stations"])
+
 app.include_router(websocket.router,         prefix="/ws",                      tags=["WebSocket"])
-app.include_router(predictive_alerts.router, prefix="/api/v1/alerts/predictive",tags=["Predictive Alerts"])
+
+app.include_router(ngo_stations.router,      tags=["NGO Stations"])
+app.include_router(predictive_alerts.router, tags=["Predictive Alerts"])
 
 # ── Home & Health ─────────────────────────────────────────────────────────────
 @app.get("/")

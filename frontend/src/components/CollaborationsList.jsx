@@ -245,7 +245,7 @@ export default function CollaborationsList({ extraRows = [] }) {
                   </td>
                   <td style={tdStyle}>
                     <ReportsBadge
-                      count={row.reports_count ?? 0}
+                      count={row.report_count ?? 0}
                       onClick={() => setPanel({ open: true, stationId: row.station_id ?? row.id })}
                     />
                   </td>
